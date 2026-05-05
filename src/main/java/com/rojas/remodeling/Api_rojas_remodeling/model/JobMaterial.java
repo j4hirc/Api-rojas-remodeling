@@ -1,21 +1,26 @@
 package com.rojas.remodeling.Api_rojas_remodeling.model;
 
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "roles")
-public class roles {
-
+@Entity
+@Table(name = "job_material")
+public class JobMaterial {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "job_id", nullable = false)
+    private Jobs job;
+
+    @ManyToOne
+    @JoinColumn(name = "material_id", nullable = false)
+    private Materials material;
 }

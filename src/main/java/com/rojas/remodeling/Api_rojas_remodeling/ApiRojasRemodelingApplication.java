@@ -8,6 +8,10 @@ public class ApiRojasRemodelingApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ApiRojasRemodelingApplication.class, args);
+
+		System.out.println("Ya lo clone");
 	}
+
+
 
 }

@@ -1,0 +1,49 @@
+package com.rojas.remodeling.Api_rojas_remodeling.model;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "jobs")
+public class Jobs {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String clientName;
+
+    @Column(nullable = false)
+    private String clientPhone;
+
+    @Column(nullable = false)
+    private String description;
+
+    @Column(nullable = false)
+    private String address;
+
+    private Double length;
+    private Double longitude;
+
+    private String safeDepositBoxCodes;
+
+    @Column(nullable = false)
+    private String status;
+
+    @Column(nullable = false)
+    private double pay;
+
+    @ManyToOne
+    @JoinColumn(name = "employee_id", nullable = false)
+    private Users employee;
+
+    @ManyToOne
+    @JoinColumn(name = "manager_id", nullable = false)
+    private Users manager;
+
+}

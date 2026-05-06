@@ -7,6 +7,24 @@ import java.util.List;
 
 public interface MaterialsService {
 
+    //Crear
     MaterialsResponseDto createMaterials(MaterialsRequestDto materialsRequestDto);
-    List<MaterialsResponseDto> getAllMaterials();
+
+    // Leer todos
+    List<MaterialsResponseDto> findAll();
+
+    //Leer por ID
+    MaterialsResponseDto findById(long id);
+
+    //Actualizar
+    MaterialsResponseDto updateMaterials(Long id, MaterialsRequestDto materialsRequestDto);
+
+    //Eliminar
+    void deleteMaterials(Long id);
+
+    // Busquedas personalizadas
+    List<MaterialsResponseDto> findByCategoriesId(Long id);
+    List<MaterialsResponseDto> findByName(String name);
+
+
 }

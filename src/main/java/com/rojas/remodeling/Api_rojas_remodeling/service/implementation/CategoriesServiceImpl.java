@@ -22,7 +22,6 @@ public class CategoriesServiceImpl implements CategoriesService {
      private final CategoriesMapper categoriesMapper;
 
 
-
     @Override
     public CategoriesResponseDto createCategories(CategoriesRequestDto categoriesRequestDto) {
         if (categoriesRepository.existsByName(categoriesRequestDto.getName())){
@@ -41,6 +40,45 @@ public class CategoriesServiceImpl implements CategoriesService {
                 .map(categoriesMapper::toResponseDto)
                 .collect(Collectors.toList());
      }
+
+    @Override
+    public CategoriesResponseDto findById(Long id) {
+        return categoriesRepository.findById(id)
+                .map(categoriesMapper::toResponseDto)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Category not found"));
+    }
+
+    @Override
+    public CategoriesResponseDto updateCategories(Long id, CategoriesRequestDto categoriesRequestDto) {
+        Categories existingCategory = categoriesRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Category not found"));
+
+        if (categoriesRepository.existsByName(categoriesRequestDto.getName()) &&
+                !existingCategory.getName().equals(categoriesRequestDto.getName())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Category already exists");
+        }
+        existingCategory.setName(categoriesRequestDto.getName());
+
+        Categories updatedCategory = categoriesRepository.save(existingCategory);
+        return categoriesMapper.toResponseDto(updatedCategory);
+    }
+
+    @Override
+    public void deleteCategories(Long id) {
+
+        if (!categoriesRepository.existsById(id)){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Category not found");
+        }
+
+        categoriesRepository.deleteById(id);
+
+    }
+
+    @Override
+    public CategoriesResponseDto findByName(String name) {
+        return categoriesRepository.findByName(name)
+                .map(categoriesMapper::toResponseDto)
+                .orElseThrow(()  -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Category not found" + name));
+    }
 
 
 }

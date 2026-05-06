@@ -5,6 +5,7 @@ import com.rojas.remodeling.Api_rojas_remodeling.dto.request.CategoriesRequestDt
 import com.rojas.remodeling.Api_rojas_remodeling.dto.response.CategoriesResponseDto;
 import com.rojas.remodeling.Api_rojas_remodeling.service.CategoriesService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +24,7 @@ public class CategoriesController {
 
     @PostMapping
     public ResponseEntity<CategoriesResponseDto> create(@RequestBody CategoriesRequestDto categoriesRequestDto) {
-        return ResponseEntity.ok(categoriesService.createCategories(categoriesRequestDto));
+        CategoriesResponseDto categoriesResponseDto = categoriesService.createCategories(categoriesRequestDto);
+        return new ResponseEntity<>(categoriesResponseDto, HttpStatus.CREATED);
     }
 }

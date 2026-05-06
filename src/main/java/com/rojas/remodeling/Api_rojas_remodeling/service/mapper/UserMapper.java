@@ -1,5 +1,6 @@
 package com.rojas.remodeling.Api_rojas_remodeling.service.mapper;
 
+import com.rojas.remodeling.Api_rojas_remodeling.dto.request.EditProfileDto;
 import com.rojas.remodeling.Api_rojas_remodeling.dto.request.UserRequestDto;
 import com.rojas.remodeling.Api_rojas_remodeling.dto.response.UserResponseDto;
 import com.rojas.remodeling.Api_rojas_remodeling.model.Users;
@@ -33,7 +34,37 @@ public class UserMapper {
         userResponseDto.setDni(users.getDni());
         userResponseDto.setName(users.getFirstName() + " " + users.getLastName());
         userResponseDto.setEmail(users.getEmail());
+        userResponseDto.setPhone(users.getPhone());
+        userResponseDto.setRoles(users.getRoles());
         return userResponseDto;
     }
+
+
+    public void updateEntityFromEditProfile(EditProfileDto dto, Users entity) {
+        entity.setDni(dto.getDni());
+        entity.setFirstName(dto.getFirstName());
+        entity.setMiddleName(dto.getMiddleName());
+        entity.setLastName(dto.getLastName());
+        entity.setSecondSurname(dto.getSecondSurname());
+        entity.setEmail(dto.getEmail());
+        entity.setPhone(dto.getPhone());
+        entity.setDateOfBirth(dto.getDateOfBirth());
+        entity.setTitle(dto.getTitle());
+    }
+
+    public void updateEntityFromRequest(UserRequestDto dto, Users entity) {
+        entity.setDni(dto.getDni());
+        entity.setFirstName(dto.getFirstName());
+        entity.setMiddleName(dto.getMiddleName());
+        entity.setLastName(dto.getLastName());
+        entity.setSecondSurname(dto.getSecondSurname());
+        entity.setEmail(dto.getEmail());
+        entity.setPhone(dto.getPhone());
+        entity.setDateOfBirth(dto.getDateOfBirth());
+        entity.setDateOfEntry(dto.getDateOfEntry());
+        entity.setStatus(dto.getStatus());
+        entity.setTitle(dto.getTitle());
+    }
+
 
 }

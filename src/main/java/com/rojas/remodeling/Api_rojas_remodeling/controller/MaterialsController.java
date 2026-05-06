@@ -5,6 +5,7 @@ import com.rojas.remodeling.Api_rojas_remodeling.dto.request.MaterialsRequestDto
 import com.rojas.remodeling.Api_rojas_remodeling.dto.response.MaterialsResponseDto;
 import com.rojas.remodeling.Api_rojas_remodeling.service.MaterialsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,8 @@ public class MaterialsController {
 
     @PostMapping
     public ResponseEntity<MaterialsResponseDto> create(@RequestBody MaterialsRequestDto materialsRequestDto) {
-        return ResponseEntity.ok(materialsService.createMaterials(materialsRequestDto));
+        MaterialsResponseDto materialsResponseDto = materialsService.createMaterials(materialsRequestDto);
+        return new ResponseEntity<>(materialsResponseDto, HttpStatus.CREATED);
     }
 
     @GetMapping

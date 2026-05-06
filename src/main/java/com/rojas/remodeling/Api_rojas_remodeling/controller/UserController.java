@@ -4,6 +4,7 @@ import com.rojas.remodeling.Api_rojas_remodeling.dto.request.EditProfileDto;
 import com.rojas.remodeling.Api_rojas_remodeling.dto.request.UserRequestDto;
 import com.rojas.remodeling.Api_rojas_remodeling.dto.response.UserResponseDto;
 import com.rojas.remodeling.Api_rojas_remodeling.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,7 +65,7 @@ public class UserController {
 
     @PostMapping("/create-user")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
-    public ResponseEntity<UserResponseDto> createUser(@RequestBody UserRequestDto userRequestDto){
+    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody UserRequestDto userRequestDto){
         UserResponseDto userResponseDto = userService.createUser(userRequestDto);
         return new ResponseEntity<>(userResponseDto, HttpStatus.CREATED);
     }

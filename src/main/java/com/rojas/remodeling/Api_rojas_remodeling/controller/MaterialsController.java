@@ -50,10 +50,13 @@ public class MaterialsController {
     // Eliminar un material
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
-    public ResponseEntity<Void> deleteMaterials(@PathVariable Long id) {
+    public ResponseEntity<?> deleteMaterials(@PathVariable Long id) {
         materialsService.deleteMaterials(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Eliminado correctamente");
     }
+
+
+
 
     // Buscar materiales por ID de categoría
     @GetMapping("/category/{id}")

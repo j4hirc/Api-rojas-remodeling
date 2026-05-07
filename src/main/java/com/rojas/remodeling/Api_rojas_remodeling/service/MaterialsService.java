@@ -26,5 +26,7 @@ public interface MaterialsService {
     List<MaterialsResponseDto> findByCategoriesId(Long id);
     List<MaterialsResponseDto> findByName(String name);
 
+    List<MaterialsResponseDto> findByCategoriesName(String name);
+
 
 }

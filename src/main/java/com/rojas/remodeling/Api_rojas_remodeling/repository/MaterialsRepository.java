@@ -40,6 +40,12 @@ public interface MaterialsRepository extends JpaRepository<Materials, Long> {
     @EntityGraph(attributePaths = {"category"})
     List<Materials> findAllById(@NonNull Iterable<Long> ids);
 
+    @EntityGraph(attributePaths = {"category"})
+    @Query("SELECT m FROM Materials m WHERE m.category.name LIKE %:categoryName%")
+    List<Materials> findByCategoriesName(@Param("categoryName") String categoryName);
+
+
+
 
 
 }

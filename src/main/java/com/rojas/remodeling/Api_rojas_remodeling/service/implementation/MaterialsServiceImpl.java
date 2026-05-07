@@ -96,4 +96,12 @@ public class MaterialsServiceImpl implements MaterialsService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<MaterialsResponseDto> findByCategoriesName(String name) {
+        List<Materials> materials = materialsRepository.findByCategoriesName(name);
+        return materials.stream()
+                .map(materialsMapper::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
 }

@@ -76,5 +76,11 @@ public class MaterialsController {
     }
 
 
+    @GetMapping("/category-name/{name}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE')")
+    public ResponseEntity<List<MaterialsResponseDto>> findByCategoryName(@PathVariable String name) {
+        return ResponseEntity.ok(materialsService.findByCategoriesName(name));
+    }
+
 
 }

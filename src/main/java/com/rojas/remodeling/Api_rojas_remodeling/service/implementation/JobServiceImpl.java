@@ -60,6 +60,10 @@ public class JobServiceImpl implements JobService {
         }).toList();
     }
 
+    @Override
+    public List<JobResponseDto> findByEmployeeId() {
+        return List.of();
+    }
 
 
     @Override

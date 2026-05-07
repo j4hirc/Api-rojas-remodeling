@@ -21,12 +21,11 @@ public class MaterialsMapper {
 
         materialsResponseDto.setId(materials.getId());
         materialsResponseDto.setName(materials.getName());
+        materialsResponseDto.setCategoryName(materials.getCategory().getName());
 
-        if (materials.getCategory() != null) {
-            materialsResponseDto.setCategoryName(materials.getCategory().getName());
-        }
 
         return materialsResponseDto;
     }
+
 
 }

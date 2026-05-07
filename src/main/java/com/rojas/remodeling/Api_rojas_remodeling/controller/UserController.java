@@ -73,7 +73,7 @@ public class UserController {
 
     @PutMapping("/update-user/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
-    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id, @RequestBody UserRequestDto userRequestDto){
+    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id, @Valid @RequestBody UserRequestDto userRequestDto){
         UserResponseDto userResponseDto = userService.updateUser(id,userRequestDto);
         return ResponseEntity.ok(userResponseDto);
     }
@@ -81,7 +81,7 @@ public class UserController {
 
     @PutMapping("/edit-user/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE')")
-    public ResponseEntity<UserResponseDto> editUser(@PathVariable Long id, @RequestBody EditProfileDto editProfileDto){
+    public ResponseEntity<UserResponseDto> editUser(@PathVariable Long id, @Valid @RequestBody EditProfileDto editProfileDto){
         return ResponseEntity.ok(userService.editProfile(id, editProfileDto));
     }
 

@@ -35,4 +35,11 @@ public interface MaterialsRepository extends JpaRepository<Materials, Long> {
     @Query("SELECT CASE WHEN COUNT(m) > 0 THEN true ELSE false END FROM Materials m WHERE m.name = :name")
     Boolean existsByName(@Param("name") String name);
 
+    @Override
+    @NonNull
+    @EntityGraph(attributePaths = {"category"})
+    List<Materials> findAllById(@NonNull Iterable<Long> ids);
+
+
+
 }

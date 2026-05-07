@@ -27,7 +27,10 @@ public class Jobs {
     @Column(nullable = false)
     private String address;
 
-    private Double length;
+    @Column(nullable = false)
+    private Double latitude;
+
+    @Column(nullable = false)
     private Double longitude;
 
     private String safeDepositBoxCodes;

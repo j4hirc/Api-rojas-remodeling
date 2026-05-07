@@ -4,6 +4,7 @@ package com.rojas.remodeling.Api_rojas_remodeling.controller;
 import com.rojas.remodeling.Api_rojas_remodeling.dto.request.MaterialsRequestDto;
 import com.rojas.remodeling.Api_rojas_remodeling.dto.response.MaterialsResponseDto;
 import com.rojas.remodeling.Api_rojas_remodeling.service.MaterialsService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ public class MaterialsController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
-    public ResponseEntity<MaterialsResponseDto> create(@RequestBody MaterialsRequestDto materialsRequestDto) {
+    public ResponseEntity<MaterialsResponseDto> create(@Valid @RequestBody MaterialsRequestDto materialsRequestDto) {
         MaterialsResponseDto materialsResponseDto = materialsService.createMaterials(materialsRequestDto);
         return new ResponseEntity<>(materialsResponseDto, HttpStatus.CREATED);
     }
@@ -43,7 +44,7 @@ public class MaterialsController {
     // Actualizar un material
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
-    public ResponseEntity<MaterialsResponseDto> updateMaterials(@PathVariable Long id, @RequestBody MaterialsRequestDto materialsRequestDto) {
+    public ResponseEntity<MaterialsResponseDto> updateMaterials(@PathVariable Long id, @Valid @RequestBody MaterialsRequestDto materialsRequestDto) {
         return ResponseEntity.ok(materialsService.updateMaterials(id, materialsRequestDto));
     }
 
@@ -64,6 +65,8 @@ public class MaterialsController {
     public ResponseEntity<List<MaterialsResponseDto>> findByCategoriesId(@PathVariable Long id) {
         return ResponseEntity.ok(materialsService.findByCategoriesId(id));
     }
+
+
 
     // Buscar materiales por nombre
     @GetMapping("/search/{name}")

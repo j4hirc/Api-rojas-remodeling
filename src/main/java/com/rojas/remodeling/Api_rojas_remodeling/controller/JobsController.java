@@ -20,11 +20,26 @@ public class JobsController {
     private final JobService service;
 
 
-    @GetMapping("/find-by-id/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE')")
+    @GetMapping("/find-by-id-employee/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
     public ResponseEntity<List<JobResponseDto>> findByEmployeeId(@PathVariable Long id){
         return ResponseEntity.ok(service.findByEmployeeId(id));
     }
+
+
+    @GetMapping("/find-id/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    public ResponseEntity<JobResponseDto> findById(@PathVariable Long id){
+        return ResponseEntity.ok(service.findById(id));
+    }
+
+
+    @GetMapping("/find-name-employee/{nameEmployee}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    public ResponseEntity<List<JobResponseDto>> findByNameEmployee(@PathVariable String nameEmployee){
+        return ResponseEntity.ok(service.findByNameEmployee(nameEmployee));
+    }
+
 
 
     @GetMapping("/all")
@@ -46,5 +61,14 @@ public class JobsController {
     public ResponseEntity<JobResponseDto> updateJob(@PathVariable Long id,@Valid @RequestBody JobRequestDto jobRequestDto){
         return ResponseEntity.ok(service.updateJob(id,jobRequestDto));
     }
+
+
+    @DeleteMapping("/delete-job/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    public ResponseEntity<String> deleteJob(@PathVariable Long id){
+        service.deleteJob(id);
+        return ResponseEntity.ok("Trabajo eliminado con exito");
+    }
+
 
 }

@@ -4,6 +4,7 @@ import com.rojas.remodeling.Api_rojas_remodeling.model.JobUpdates;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -26,5 +27,9 @@ public interface JobUpdateRepository extends JpaRepository<JobUpdates, Long> {
     @Query("SELECT ju FROM JobUpdates ju WHERE ju.job.id IN :jobIds")
     @EntityGraph(attributePaths = {"job", "employee"})
     List<JobUpdates> findAllByJobIds(@Param("jobIds") List<Long> jobIds);
+
+    @Modifying
+    @Query("DELETE FROM JobUpdates ju WHERE ju.job.id = :jobId")
+    void deleteByJobId(@Param("jobId") Long jobId);
 
 }

@@ -34,6 +34,7 @@ public class UserServiceImpl implements UserService {
         List<Users> users = usersRepository.findAll();
 
         return users.stream()
+                .filter(user -> !user.getStatus().equalsIgnoreCase("Unemployed"))
                 .map(userMapper::entityToUserResponse)
                 .toList();
     }

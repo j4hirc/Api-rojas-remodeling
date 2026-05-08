@@ -21,6 +21,7 @@ public class JobUpdateController {
 
     private final JobUpdateService service;
 
+
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('EMPLOYEE')")
     public ResponseEntity<JobUpdateResponseDto> createJobUpdate(

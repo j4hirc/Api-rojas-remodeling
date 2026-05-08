@@ -20,6 +20,13 @@ public class JobsController {
     private final JobService service;
 
 
+    @GetMapping("/find-by-id/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE')")
+    public ResponseEntity<List<JobResponseDto>> findByEmployeeId(@PathVariable Long id){
+        return ResponseEntity.ok(service.findByEmployeeId(id));
+    }
+
+
     @GetMapping("/all")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
     public ResponseEntity<List<JobResponseDto>> findAll(){

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ public class JobUpdateServiceImpl implements JobUpdateService {
 
     private final JobUpdateMapper jobUpdateMapper;
     private final EvidencesMapper evidencesMapper;
+    private final EmailService emailService;
 
     @Override
     @Transactional
@@ -65,6 +67,28 @@ public class JobUpdateServiceImpl implements JobUpdateService {
             }
         }
 
+        notifyManager(job, employee);
+
         return jobUpdateMapper.toResponse(savedUpdate, evidencesResponseList);
+    }
+
+    private void notifyManager(Jobs job, Users employee) {
+        Users manager = job.getManager();
+
+        if (manager != null && manager.getEmail() != null) {
+            String managerEmail = manager.getEmail();
+            String employeeName = employee.getFirstName() + " " + employee.getLastName();
+            String jobName = job.getDescription();
+
+            String subject = "Nueva actualización en el trabajo: " + jobName;
+            String body = "Hola " + manager.getFirstName() + " " + manager.getLastName()  +",\n\n" +
+                    "El empleado " + employeeName + " acaba de registrar una nueva actualización " +
+                    "para el trabajo '" + jobName + "'.\n\n" +
+                    "Por favor, revisa el sistema para ver las evidencias y detalles.\n\n" +
+                    "Saludos,\n" +
+                    "Sistema Rojas Remodeling";
+
+            emailService.sendEmail(managerEmail, subject, body);
+        }
     }
 }

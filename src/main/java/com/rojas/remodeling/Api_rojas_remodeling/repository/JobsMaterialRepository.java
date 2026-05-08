@@ -20,4 +20,8 @@ public interface JobsMaterialRepository extends JpaRepository<JobMaterial, Long>
     @EntityGraph(attributePaths = {"job", "material"})
     @Query("SELECT j FROM JobMaterial j WHERE j.job.id = :jobId")
     List<JobMaterial> findByJobId(Long jobId);
+
+    @Query("SELECT jm FROM JobMaterial jm WHERE jm.job.id IN :jobIds")
+    @EntityGraph(attributePaths = {"material"})
+    List<JobMaterial> findAllByJobIds(@Param("jobIds") List<Long> jobIds);
 }

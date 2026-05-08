@@ -7,7 +7,8 @@ import java.util.List;
 
 public interface JobService {
     List<JobResponseDto> findAll();
-    List<JobResponseDto> findByEmployeeId();
+    List<JobResponseDto> findByNameEmployee(String nameEmployee);
+    List<JobResponseDto> findByEmployeeId(Long employeeId);
     JobResponseDto createJob(JobRequestDto jobRequestDto);
     JobResponseDto updateJob(Long id, JobRequestDto jobRequestDto);
 }

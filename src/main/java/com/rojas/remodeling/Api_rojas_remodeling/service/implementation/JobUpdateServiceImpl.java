@@ -76,7 +76,6 @@
 
 
 
-
         @Override
         @Transactional
         public JobUpdateResponseDto updateJobUpdate(Long id, JobUpdateRequestDto requestDto, List<MultipartFile> files) {
@@ -93,24 +92,29 @@
             existingUpdate.setEmployee(employee);
             existingUpdate.setComment(requestDto.getComment());
 
-            JobUpdates savedUpdate = jobUpdateRepository.save(existingUpdate);
-
             if (files != null && !files.isEmpty()) {
+
+                List<Evidences> oldEvidences = evidencesRepository.findByJobUpdate(existingUpdate);
+
+                if (oldEvidences != null && !oldEvidences.isEmpty()) {
+                    evidencesRepository.deleteAll(oldEvidences);
+                }
+
                 List<Evidences> newEvidences = files.parallelStream().map(file -> {
                     String publicUrl = supabaseStorageService.uploadFile(file);
 
                     Evidences evidence = new Evidences();
                     evidence.setImageUri(publicUrl);
-                    evidence.setJobUpdate(savedUpdate);
+                    evidence.setJobUpdate(existingUpdate);
                     return evidence;
                 }).toList();
+
 
                 evidencesRepository.saveAll(newEvidences);
             }
 
             List<EvidencesResponseDto> evidencesResponseList = new ArrayList<>();
-
-            List<Evidences> allEvidences = evidencesRepository.findByJobUpdate(savedUpdate);
+            List<Evidences> allEvidences = evidencesRepository.findByJobUpdate(existingUpdate);
 
             if (allEvidences != null) {
                 for (Evidences ev : allEvidences) {
@@ -118,7 +122,7 @@
                 }
             }
 
-            return jobUpdateMapper.toResponse(savedUpdate, evidencesResponseList);
+            return jobUpdateMapper.toResponse(existingUpdate, evidencesResponseList);
         }
 
 

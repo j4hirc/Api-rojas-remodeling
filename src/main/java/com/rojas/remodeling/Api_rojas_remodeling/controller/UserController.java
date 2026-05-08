@@ -34,6 +34,13 @@ public class UserController {
         return ResponseEntity.ok(userService.findAll());
     }
 
+
+    @GetMapping("/all-unemployed")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    public ResponseEntity<List<UserResponseDto>> findUnemployed(){
+        return ResponseEntity.ok(userService.findUnemployed());
+    }
+
     @GetMapping("/dni-user/{dni}")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
     public ResponseEntity<UserResponseDto> findByDni(@PathVariable String dni){
@@ -84,8 +91,6 @@ public class UserController {
     public ResponseEntity<UserResponseDto> editUser(@PathVariable Long id, @Valid @RequestBody EditProfileDto editProfileDto){
         return ResponseEntity.ok(userService.editProfile(id, editProfileDto));
     }
-
-
 
 
 

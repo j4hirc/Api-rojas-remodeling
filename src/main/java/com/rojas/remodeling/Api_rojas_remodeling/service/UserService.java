@@ -9,6 +9,8 @@ import java.util.List;
 public interface UserService {
     List<UserResponseDto> findAll();
 
+    List<UserResponseDto> findUnemployed();
+
     UserResponseDto findById(Long id);
 
     UserResponseDto updateUser(Long id, UserRequestDto userRequestDto);

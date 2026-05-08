@@ -10,16 +10,16 @@ public interface MaterialsService {
     //Crear
     MaterialsResponseDto createMaterials(MaterialsRequestDto materialsRequestDto);
 
-    // Leer todos
+
     List<MaterialsResponseDto> findAll();
 
-    //Leer por ID
+
     MaterialsResponseDto findById(long id);
 
-    //Actualizar
+
     MaterialsResponseDto updateMaterials(Long id, MaterialsRequestDto materialsRequestDto);
 
-    //Eliminar
+
     void deleteMaterials(Long id);
 
     // Busquedas personalizadas

@@ -19,7 +19,7 @@ public class MaterialsMapper {
     public MaterialsResponseDto toResponseDto(Materials materials) {
         MaterialsResponseDto materialsResponseDto = new MaterialsResponseDto();
 
-        materialsResponseDto.setId(materials.getId());
+        materialsResponseDto.setMaterialId(materials.getId());
         materialsResponseDto.setName(materials.getName());
         materialsResponseDto.setCategoryName(materials.getCategory().getName());
 

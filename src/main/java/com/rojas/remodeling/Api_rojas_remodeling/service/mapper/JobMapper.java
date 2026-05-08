@@ -31,7 +31,7 @@ public class JobMapper {
 
     public JobResponseDto jobsToJobResponseDto(Jobs jobs, List<MaterialsResponseDto> materials, List<JobUpdateResponseDto> jobUpdate){
         JobResponseDto dto = new JobResponseDto();
-        dto.setId(jobs.getId());
+        dto.setJobId(jobs.getId());
         dto.setClientName(jobs.getClientName());
         dto.setClientPhone(jobs.getClientPhone());
         dto.setDescription(jobs.getDescription());

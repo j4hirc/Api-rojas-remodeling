@@ -11,6 +11,7 @@ import com.rojas.remodeling.Api_rojas_remodeling.service.MaterialsService;
 import com.rojas.remodeling.Api_rojas_remodeling.service.mapper.MaterialsMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ public class MaterialsServiceImpl implements MaterialsService {
 
 
     @Override
+    @Transactional
     public MaterialsResponseDto createMaterials(MaterialsRequestDto materialsRequestDto) {
         if (materialsRepository.existsByName(materialsRequestDto.getName())) {
             throw new RuntimeException(materialsRequestDto.getName() + " already exists");
@@ -39,13 +41,16 @@ public class MaterialsServiceImpl implements MaterialsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<MaterialsResponseDto> findAll() {
         return materialsRepository.findAll().stream()
                 .map(materialsMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
+
     @Override
+    @Transactional(readOnly = true)
     public MaterialsResponseDto findById(long id) {
         return materialsRepository.findById(id)
                 .map(materialsMapper::toResponseDto)
@@ -53,6 +58,7 @@ public class MaterialsServiceImpl implements MaterialsService {
     }
 
     @Override
+    @Transactional
     public MaterialsResponseDto updateMaterials(Long id, MaterialsRequestDto materialsRequestDto) {
         Materials existingMaterials = materialsRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Material not found with ID: " + id));
@@ -71,7 +77,9 @@ public class MaterialsServiceImpl implements MaterialsService {
         return materialsMapper.toResponseDto(materialsRepository.save(existingMaterials));
     }
 
+
     @Override
+    @Transactional
     public void deleteMaterials(Long id) {
 
         if(!materialsRepository.existsById(id)) {
@@ -83,6 +91,7 @@ public class MaterialsServiceImpl implements MaterialsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<MaterialsResponseDto> findByCategoriesId(Long id) {
         return materialsRepository.findByCategoryId(id).stream()
                 .map(materialsMapper::toResponseDto)
@@ -90,6 +99,7 @@ public class MaterialsServiceImpl implements MaterialsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<MaterialsResponseDto> findByName(String name) {
         return materialsRepository.findByNameContainingIgnoreCase(name).stream()
                 .map(materialsMapper::toResponseDto)
@@ -97,6 +107,7 @@ public class MaterialsServiceImpl implements MaterialsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<MaterialsResponseDto> findByCategoriesName(String name) {
         List<Materials> materials = materialsRepository.findByCategoriesName(name);
         return materials.stream()

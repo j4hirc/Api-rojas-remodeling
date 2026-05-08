@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class JobUpdateResponseDto {
 
-    private Long id;
+    private Long jobUpdateId;
 
     private String comment;
 

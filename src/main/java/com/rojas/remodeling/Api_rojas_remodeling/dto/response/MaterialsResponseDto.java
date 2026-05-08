@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class MaterialsResponseDto {
 
-    private Long  id;
+    private Long  materialId;
     private String name;
     private String categoryName;
 }

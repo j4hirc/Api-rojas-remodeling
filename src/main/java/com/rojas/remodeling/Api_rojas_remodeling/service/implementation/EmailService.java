@@ -1,9 +1,10 @@
 package com.rojas.remodeling.Api_rojas_remodeling.service.implementation;
 
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -19,13 +20,23 @@ public class EmailService {
     @Async
     public void sendEmail(String to, String subject, String body) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
+            MimeMessage message = mailSender.createMimeMessage();
 
-            message.setFrom("Rojas Remodeling <" + fromEmail + ">");
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            message.setTo(to);
-            message.setSubject(subject);
-            message.setText(body);
+            helper.setFrom("Rojas Remodeling <" + fromEmail + ">");
+            helper.setReplyTo(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+
+            String htmlBody = "<div style='font-family: Arial, sans-serif; color: #333;'>"
+                    + "<h2>Actualización de Proyecto</h2>"
+                    + "<p>" + body.replace("\n", "<br>") + "</p>"
+                    + "<hr>"
+                    + "<p style='font-size: 12px; color: #777;'>Este es un mensaje automático del sistema. Por favor no respondas a este correo.</p>"
+                    + "</div>";
+
+            helper.setText(htmlBody, true);
 
             mailSender.send(message);
         } catch (Exception e) {

@@ -13,6 +13,7 @@ import com.rojas.remodeling.Api_rojas_remodeling.service.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -28,6 +29,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserResponseDto> findAll() {
         List<Users> users = usersRepository.findAll();
 
@@ -39,6 +41,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public UserResponseDto findById(Long id) {
         Users users = usersRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("The user with the ID could not be found: " + id));
@@ -50,6 +53,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional
     public UserResponseDto updateUser(Long id, UserRequestDto userRequestDto) {
         Users existingUser = usersRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("The user does not exist"));
@@ -80,6 +84,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
         validateUniqueFields(userRequestDto.getDni(), userRequestDto.getEmail(), userRequestDto.getPhone());
 
@@ -103,6 +108,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional
     public UserResponseDto editProfile(Long id, EditProfileDto editProfileDto) {
         Users existingUser = usersRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("The user does not exist"));
@@ -125,6 +131,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserResponseDto> findByName(String name) {
         List<Users> users = usersRepository.findByName(name);
         return users.stream()
@@ -133,6 +140,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserResponseDto> findByRoleName(String role) {
         List<Users> users = usersRepository.findUsersByRoleName(role);
         return users.stream()
@@ -143,6 +151,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public UserResponseDto findByDni(String dni) {
         Users users = usersRepository.findByDni(dni)
                 .orElseThrow(() -> new ResourceNotFoundException("The user does not exist"));

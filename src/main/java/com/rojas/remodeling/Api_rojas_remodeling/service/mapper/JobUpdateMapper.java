@@ -15,7 +15,7 @@ import java.util.List;
 public class JobUpdateMapper {
     public JobUpdateResponseDto toResponse(JobUpdates entity, List<EvidencesResponseDto> evidencesResponse){
         JobUpdateResponseDto jobUpdateResponseDto = new JobUpdateResponseDto();
-        jobUpdateResponseDto.setId(entity.getId());
+        jobUpdateResponseDto.setJobUpdateId(entity.getId());
         jobUpdateResponseDto.setDate(entity.getDate());
         jobUpdateResponseDto.setComment(entity.getComment());
         jobUpdateResponseDto.setEvidences(evidencesResponse);

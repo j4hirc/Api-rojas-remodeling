@@ -30,7 +30,7 @@ public class UserMapper {
 
     public UserResponseDto entityToUserResponse(Users users){
         UserResponseDto userResponseDto = new UserResponseDto();
-        userResponseDto.setId(users.getId());
+        userResponseDto.setUserId(users.getId());
         userResponseDto.setDni(users.getDni());
         userResponseDto.setName(users.getFirstName() + " " + users.getLastName());
         userResponseDto.setEmail(users.getEmail());

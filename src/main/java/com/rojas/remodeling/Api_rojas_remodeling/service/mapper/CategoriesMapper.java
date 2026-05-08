@@ -16,7 +16,7 @@ public class CategoriesMapper {
 
     public CategoriesResponseDto toResponseDto(Categories entity) {
         CategoriesResponseDto dto = new CategoriesResponseDto();
-        dto.setId(entity.getId());
+        dto.setCategoryId(entity.getId());
         dto.setName(entity.getName());
         return dto;
     }

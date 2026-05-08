@@ -25,8 +25,18 @@ public class JobUpdateController {
     @PreAuthorize("hasAnyRole('EMPLOYEE')")
     public ResponseEntity<JobUpdateResponseDto> createJobUpdate(
             @Valid @RequestPart("data") JobUpdateRequestDto requestDto,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+            @RequestPart(value = "files") List<MultipartFile> files) {
 
         return new ResponseEntity<>(service.createJobUpdate(requestDto, files), HttpStatus.CREATED);
     }
+
+    @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('EMPLOYEE')")
+    public ResponseEntity<JobUpdateResponseDto> updateJobUpdate(@PathVariable Long id,
+                                                                @Valid @RequestPart("data") JobUpdateRequestDto requestDto,
+                                                                @RequestPart(value = "files") List<MultipartFile> files){
+        return ResponseEntity.ok(service.updateJobUpdate(id,requestDto,files));
+    }
+
+
 }

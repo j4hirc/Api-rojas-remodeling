@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class CategoriesResponseDto {
-    private Long id;
+    private Long categoryId;
     private String name;
 }

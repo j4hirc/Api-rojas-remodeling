@@ -7,7 +7,7 @@ import java.util.Set;
 
 @Data
 public class UserResponseDto {
-    private Long id;
+    private Long userId;
     private String dni;
     private String name;
     private String email;

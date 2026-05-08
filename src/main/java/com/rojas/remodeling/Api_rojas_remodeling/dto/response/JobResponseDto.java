@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 public class JobResponseDto {
 
-    private Long id;
+    private Long jobId;
 
     private String clientName;
 

@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -48,7 +47,7 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public List<JobResponseDto> findByNameEmployee(String nameEmployee) {
-        List<Jobs> jobs = jobsRepository.findByNameEmployee(nameEmployee);
+        List<Jobs> jobs = jobsRepository.findByEmployeeFirstName(nameEmployee);
         return buildJobResponses(jobs);
     }
 
@@ -182,7 +181,7 @@ public class JobServiceImpl implements JobService {
 
         return updates.stream().map(update -> {
                     List<EvidencesResponseDto> evidences = evidencesRepository
-                                    .finAllJobUpdateId(update.getId()).stream()
+                                    .findAllJobUpdateId(update.getId()).stream()
                                     .map(evidencesMapper::toResponse).toList();
                     return jobUpdateMapper.toResponse(update, evidences);})
                 .toList();

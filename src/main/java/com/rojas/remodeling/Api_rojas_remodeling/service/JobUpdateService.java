@@ -8,4 +8,7 @@ import java.util.List;
 
 public interface JobUpdateService {
     JobUpdateResponseDto createJobUpdate(JobUpdateRequestDto requestDto, List<MultipartFile> files);
+
+    JobUpdateResponseDto updateJobUpdate(Long id, JobUpdateRequestDto requestDto, List<MultipartFile> files);
+
 }

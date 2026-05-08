@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class EvidencesResponseDto {
-    private Long id;
+    private Long evidenceId;
     private String imageUri;
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class EvidencesMapper {
     public EvidencesResponseDto toResponse(Evidences entity){
         EvidencesResponseDto evidencesResponseDto = new EvidencesResponseDto();
-        evidencesResponseDto.setId(entity.getId());
+        evidencesResponseDto.setEvidenceId(entity.getId());
         evidencesResponseDto.setImageUri(entity.getImageUri());
         return evidencesResponseDto;
     }

@@ -33,6 +33,15 @@ public class UserMapper {
         userResponseDto.setUserId(users.getId());
         userResponseDto.setDni(users.getDni());
         userResponseDto.setName(users.getFirstName() + " " + users.getLastName());
+
+        userResponseDto.setFirstName(users.getFirstName());
+        userResponseDto.setMiddleName(users.getMiddleName());
+        userResponseDto.setLastName(users.getLastName());
+        userResponseDto.setSecondSurname(users.getSecondSurname());
+        userResponseDto.setTitle(users.getTitle());
+        userResponseDto.setDateOfBirth(users.getDateOfBirth());
+        userResponseDto.setDateOfEntry(users.getDateOfEntry());
+        userResponseDto.setStatus(users.getStatus());
         userResponseDto.setEmail(users.getEmail());
         userResponseDto.setPhone(users.getPhone());
         userResponseDto.setRoles(users.getRoles());

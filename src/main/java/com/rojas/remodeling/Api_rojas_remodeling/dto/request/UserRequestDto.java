@@ -28,7 +28,6 @@ public class UserRequestDto {
     @Email(message = "Email no es valido")
     private String email;
 
-    @NotBlank(message = "La contraseña no puede estar vacía")
     private String password;
 
     @NotBlank(message = "El numero de celular no puede estar vacío")

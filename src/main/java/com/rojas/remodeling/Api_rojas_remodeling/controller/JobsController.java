@@ -43,7 +43,7 @@ public class JobsController {
 
 
     @GetMapping("/all")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE')")
     public ResponseEntity<List<JobResponseDto>> findAll(){
         return ResponseEntity.ok(service.findAll());
     }

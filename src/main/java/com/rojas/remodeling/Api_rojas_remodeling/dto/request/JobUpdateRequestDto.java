@@ -1,11 +1,9 @@
 package com.rojas.remodeling.Api_rojas_remodeling.dto.request;
 
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class JobUpdateRequestDto {
@@ -19,5 +17,8 @@ public class JobUpdateRequestDto {
     @NotNull(message = "EL id del empleado no puede ser nulo")
     private Long employeeId;
 
+    @NotBlank(message = "El estado del trabajo es requerido")
+    private String status;
 
+    private List<Long> materialIds;
 }

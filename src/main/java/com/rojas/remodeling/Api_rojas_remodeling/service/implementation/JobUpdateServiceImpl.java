@@ -24,6 +24,8 @@ public class JobUpdateServiceImpl implements JobUpdateService {
     private final JobsRepository jobsRepository;
     private final UsersRepository usersRepository;
     private final EvidencesRepository evidencesRepository;
+
+    // Agregamos los repositorios necesarios para guardar los materiales
     private final MaterialsRepository materialsRepository;
     private final JobsMaterialRepository jobMaterialRepository;
 
@@ -35,14 +37,19 @@ public class JobUpdateServiceImpl implements JobUpdateService {
     @Override
     @Transactional
     public JobUpdateResponseDto createJobUpdate(JobUpdateRequestDto requestDto, List<MultipartFile> files) {
+
         Jobs job = jobsRepository.findById(requestDto.getJobId())
                 .orElseThrow(() -> new RuntimeException("Trabajo no encontrado"));
         Users employee = usersRepository.findById(requestDto.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
 
-        job.setStatus(requestDto.getStatus());
-        jobsRepository.save(job);
+        // 1. ACTUALIZAR EL ESTADO DEL TRABAJO (En Progreso / Completado)
+        if (requestDto.getStatus() != null) {
+            job.setStatus(requestDto.getStatus());
+            jobsRepository.save(job);
+        }
 
+        // 2. GUARDAR MATERIALES ELEGIDOS POR EL EMPLEADO EN LA OBRA
         if (requestDto.getMaterialIds() != null && !requestDto.getMaterialIds().isEmpty()) {
             List<Materials> usedMaterials = materialsRepository.findAllById(requestDto.getMaterialIds());
             List<JobMaterial> jobMaterials = usedMaterials.stream()
@@ -54,13 +61,13 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         JobUpdates savedUpdate = jobUpdateRepository.save(jobUpdate);
 
         List<EvidencesResponseDto> evidencesResponseList = new ArrayList<>();
-        String pdfPublicUrl = null; // Guardará el link del PDF para el correo
+        String pdfPublicUrl = null; // Guardará el link del PDF para enviarlo por correo
 
         if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
                 String publicUrl = supabaseStorageService.uploadFile(file);
 
-                // Si el archivo es un PDF, lo guardamos para mandarlo en el correo
+                // Si el archivo que se subió es el PDF, guardamos la URL
                 if (file.getOriginalFilename() != null && file.getOriginalFilename().toLowerCase().endsWith(".pdf")) {
                     pdfPublicUrl = publicUrl;
                 }
@@ -73,20 +80,23 @@ public class JobUpdateServiceImpl implements JobUpdateService {
             }
         }
 
-        // Pasamos el link del PDF a la notificación
+
         notifyManager(job, employee, pdfPublicUrl);
+
         return jobUpdateMapper.toResponse(savedUpdate, evidencesResponseList);
     }
 
     @Override
     @Transactional
     public JobUpdateResponseDto updateJobUpdate(Long id, JobUpdateRequestDto requestDto, List<MultipartFile> files) {
-        JobUpdates existingUpdate = jobUpdateRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Actualización no encontrada"));
+        JobUpdates existingUpdate = jobUpdateRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Actualización de trabajo no encontrada"));
         Jobs job = jobsRepository.findById(requestDto.getJobId()).orElseThrow(() -> new ResourceNotFoundException("Trabajo no encontrado"));
         Users employee = usersRepository.findById(requestDto.getEmployeeId()).orElseThrow(() -> new ResourceNotFoundException("Empleado no encontrado"));
 
-        job.setStatus(requestDto.getStatus());
-        jobsRepository.save(job);
+        if (requestDto.getStatus() != null) {
+            job.setStatus(requestDto.getStatus());
+            jobsRepository.save(job);
+        }
 
         existingUpdate.setJob(job);
         existingUpdate.setEmployee(employee);
@@ -112,20 +122,24 @@ public class JobUpdateServiceImpl implements JobUpdateService {
     }
 
     private void notifyManager(Jobs job, Users employee, String pdfUrl) {
-        Users manager = job.getManager();
-        if (manager != null && manager.getEmail() != null) {
-            String subject = "Reporte de Avance PDF: " + job.getClientName();
+        try {
+            Users manager = job.getManager();
+            if (manager != null && manager.getEmail() != null) {
+                String subject = "Reporte de Avance PDF: " + job.getClientName();
+                String body = "Hola " + manager.getFirstName() + ",\n\n" +
+                        "El empleado **" + employee.getFirstName() + " " + employee.getLastName() + "** ha reportado un avance en la obra: **" + job.getClientName() + "**.\n\n";
 
-            String body = "Hola " + manager.getFirstName() + ",\n\n" +
-                    "El empleado **" + employee.getFirstName() + " " + employee.getLastName() + "** ha reportado un avance en la obra: **" + job.getClientName() + "**.\n\n";
+                if(pdfUrl != null) {
+                    body += "📄 **DESCARGAR REPORTE FIRMADO (PDF):**\n" + pdfUrl + "\n\n";
+                }
 
-            if(pdfUrl != null) {
-                body += "📄 **DESCARGAR REPORTE FIRMADO (PDF):**\n" + pdfUrl + "\n\n";
+                body += "Puedes ingresar a tu Portal Rojas Remodeling para ver las fotos y detalles en el mapa.\n\nSaludos,\nSistema Automático Rojas Remodeling.";
+
+                emailService.sendEmail(manager.getEmail(), subject, body);
             }
-
-            body += "Puedes ingresar a tu Portal Rojas Remodeling para ver las fotos y detalles.\n\nSaludos,\nSistema Automático.";
-
-            emailService.sendEmail(manager.getEmail(), subject, body);
+        } catch (Exception e) {
+            // Si el correo falla (credenciales incorrectas, etc.), se imprime en consola PERO el reporte sí se guarda.
+            System.err.println("Advertencia: No se pudo enviar el correo. Causa: " + e.getMessage());
         }
     }
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDate; // <-- IMPORTANTE IMPORTAR ESTO
 
 @Data
 @AllArgsConstructor
@@ -41,6 +42,9 @@ public class Jobs {
     @Column(nullable = false)
     private double pay;
 
+    @Column(nullable = false, name = "job_date")
+    private LocalDate jobDate;
+
     @ManyToOne
     @JoinColumn(name = "employee_id", nullable = false)
     private Users employee;
@@ -48,5 +52,4 @@ public class Jobs {
     @ManyToOne
     @JoinColumn(name = "manager_id", nullable = false)
     private Users manager;
-
 }

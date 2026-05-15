@@ -24,6 +24,9 @@ public class JobMapper {
         entity.setSafeDepositBoxCodes(jobRequestDto.getSafeDepositBoxCodes());
         entity.setStatus(jobRequestDto.getStatus());
         entity.setPay(jobRequestDto.getPay());
+
+        entity.setJobDate(jobRequestDto.getJobDate());
+
         entity.setEmployee(employee);
         entity.setManager(manager);
         return entity;
@@ -40,6 +43,9 @@ public class JobMapper {
         dto.setLongitude(jobs.getLongitude());
         dto.setStatus(jobs.getStatus());
         dto.setPay(jobs.getPay());
+
+        dto.setJobDate(jobs.getJobDate());
+
         dto.setEmployeeId(jobs.getEmployee().getId());
         dto.setManagerId(jobs.getManager().getId());
         dto.setNameEmployee(jobs.getEmployee().getFirstName() + " " + jobs.getEmployee().getLastName());
@@ -60,8 +66,10 @@ public class JobMapper {
         entity.setSafeDepositBoxCodes(dto.getSafeDepositBoxCodes());
         entity.setStatus(dto.getStatus());
         entity.setPay(dto.getPay());
+
+        entity.setJobDate(dto.getJobDate());
+
         entity.setEmployee(employee);
         entity.setManager(manager);
     }
-
 }

@@ -1,8 +1,7 @@
 package com.rojas.remodeling.Api_rojas_remodeling.dto.response;
 
-
 import lombok.Data;
-
+import java.time.LocalDate; // <-- IMPORTANTE
 import java.util.List;
 
 @Data
@@ -28,17 +27,17 @@ public class JobResponseDto {
 
     private Double pay;
 
+    private LocalDate jobDate;
+
     private Long employeeId;
 
     private Long managerId;
 
-    private  String nameEmployee;
+    private String nameEmployee;
 
     private String nameManager;
 
     private List<MaterialsResponseDto> materials;
 
     private List<JobUpdateResponseDto> updateJob;
-
-
 }

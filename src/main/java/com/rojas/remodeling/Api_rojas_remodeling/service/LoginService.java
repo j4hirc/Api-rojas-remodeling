@@ -7,4 +7,7 @@ public interface LoginService {
     JwtAuthResponseDto authenticateUser(LoginRequestDto loginDto);
 
 
+    void forgotPassword(String email);
+
+
 }

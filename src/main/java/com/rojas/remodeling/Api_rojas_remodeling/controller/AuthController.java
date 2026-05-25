@@ -23,5 +23,13 @@ public class AuthController {
        return new ResponseEntity<>(jwtAuthResponseDto, HttpStatus.OK);
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody java.util.Map<String, String> request) {
+        String email = request.get("email");
+        loginService.forgotPassword(email);
+        return ResponseEntity.ok().build();
+    }
+
+
 
 }

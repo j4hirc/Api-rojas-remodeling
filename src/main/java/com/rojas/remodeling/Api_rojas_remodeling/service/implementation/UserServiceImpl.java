@@ -174,30 +174,26 @@ public class UserServiceImpl implements UserService {
 
 
     private void validateUniqueFields(String dni, String email, String phone){
-
         if(usersRepository.existsByDni(dni)){
-            throw new RuntimeException("DNI already exists");
+            throw new IllegalArgumentException("El DNI ingresado ya se encuentra registrado.");
         }
-
         if(usersRepository.existsByEmail(email)){
-            throw new RuntimeException("Email already exists");
+            throw new IllegalArgumentException("El Email ingresado ya se encuentra registrado.");
         }
-
         if(usersRepository.existsByPhone(phone)){
-            throw new RuntimeException("Phone already exists");
+            throw new IllegalArgumentException("El número de teléfono ya se encuentra registrado.");
         }
     }
 
-
     private void validateUniqueFieldsForUpdate(Users existingUser, String newDni, String newEmail, String newPhone) {
         if (newDni != null && usersRepository.existsByDni(newDni) && !existingUser.getDni().equals(newDni)) {
-            throw new RuntimeException("DNI already exists");
+            throw new IllegalArgumentException("El DNI ingresado ya pertenece a otro usuario.");
         }
         if (newEmail != null && usersRepository.existsByEmail(newEmail) && !existingUser.getEmail().equals(newEmail)) {
-            throw new RuntimeException("Email already exists");
+            throw new IllegalArgumentException("El Email ingresado ya pertenece a otro usuario.");
         }
         if (newPhone != null && usersRepository.existsByPhone(newPhone) && !existingUser.getPhone().equals(newPhone)) {
-            throw new RuntimeException("Phone already exists");
+            throw new IllegalArgumentException("El Teléfono ingresado ya pertenece a otro usuario.");
         }
     }
 

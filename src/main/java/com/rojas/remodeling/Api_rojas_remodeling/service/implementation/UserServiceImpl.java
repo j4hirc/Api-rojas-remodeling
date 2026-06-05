@@ -169,10 +169,6 @@ public class UserServiceImpl implements UserService {
     }
 
 
-
-
-
-
     private void validateUniqueFields(String dni, String email, String phone){
         if(usersRepository.existsByDni(dni)){
             throw new IllegalArgumentException("El DNI ingresado ya se encuentra registrado.");
@@ -196,5 +192,10 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("El Teléfono ingresado ya pertenece a otro usuario.");
         }
     }
+
+
+
+
+
 
 }

@@ -25,6 +25,8 @@ public interface UserService {
 
     UserResponseDto findByDni(String dni);
 
+    void forgotPassword(String email);
+
 
 
 

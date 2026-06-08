@@ -27,6 +27,7 @@ public class UserServiceImpl implements UserService {
     private final RolesRepository rolesRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final EmailService emailService;
 
     @Override
     @Transactional(readOnly = true)
@@ -197,5 +198,27 @@ public class UserServiceImpl implements UserService {
 
 
 
+
+
+    @Override
+    @Transactional
+    public void forgotPassword(String email) {
+        Users user = usersRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ese correo."));
+
+        String tempPassword = java.util.UUID.randomUUID().toString().substring(0, 8);
+
+        user.setPassword(passwordEncoder.encode(tempPassword));
+        usersRepository.save(user);
+
+        String subject = "Recuperación de Contraseña - Rojas Remodeling";
+        String body = "Hola " + user.getFirstName() + ",\n\n" +
+                "Se ha solicitado un restablecimiento de contraseña para tu cuenta en Rojas Remodeling.\n\n" +
+                "Tu nueva contraseña provisional es: " + tempPassword + "\n\n" +
+                "Te recomendamos iniciar sesión y cambiar esta contraseña por una propia lo antes posible.\n\n" +
+                "Saludos,\nSistema Rojas Remodeling.";
+
+        emailService.sendEmail(user.getEmail(), subject, body);
+    }
 
 }

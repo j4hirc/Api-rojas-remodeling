@@ -20,7 +20,7 @@ public class WeeklyReportScheduler {
     private final UsersRepository usersRepository;
     private final EmailService emailService;
 
-    // MAGIA: Esto se ejecuta automáticamente todos los LUNES a las 8:00 AM
+
     @Scheduled(cron = "0 0 8 * * MON")
     public void sendWeeklyPaymentReport() {
         List<Jobs> allJobs = jobsRepository.findAll();
@@ -30,7 +30,6 @@ public class WeeklyReportScheduler {
 
         if (completedJobs.isEmpty()) return;
 
-        // 2. Agrupamos los trabajos por Empleado y sumamos el pago
         Map<Users, Double> paymentsByEmployee = completedJobs.stream()
                 .filter(job -> job.getEmployee() != null)
                 .collect(Collectors.groupingBy(
@@ -38,7 +37,7 @@ public class WeeklyReportScheduler {
                         Collectors.summingDouble(Jobs::getPay)
                 ));
 
-        // 3. Armamos el texto del correo
+
         StringBuilder emailBody = new StringBuilder();
         emailBody.append("<h2>💰 Resumen Semanal de Pagos a Subcontratistas</h2>");
         emailBody.append("<p>Este es el reporte automático de los trabajos completados:</p>");

@@ -17,6 +17,8 @@ public class JobUpdateRequestDto {
     @NotNull(message = "EL id del empleado no puede ser nulo")
     private Long employeeId;
 
+    private Double newPrice;
+
     @NotBlank(message = "El estado del trabajo es requerido")
     private String status;
 

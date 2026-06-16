@@ -52,4 +52,6 @@ public class JobRequestDto {
     private List<Long> materialIds;
 
     private Long jobUpdateId;
+
+
 }

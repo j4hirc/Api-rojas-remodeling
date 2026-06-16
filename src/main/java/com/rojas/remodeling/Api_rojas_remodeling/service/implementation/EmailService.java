@@ -24,13 +24,13 @@ public class EmailService {
 
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom("Rojas Remodeling <" + fromEmail + ">");
+            helper.setFrom("RemoMN <" + fromEmail + ">");
             helper.setReplyTo(fromEmail);
             helper.setTo(to);
             helper.setSubject(subject);
 
             String htmlBody = "<div style='font-family: Arial, sans-serif; color: #333;'>"
-                    + "<h2>Rojas Remodeling</h2>"
+                    + "<h2>RemoMN</h2>"
                     + "<p>" + body.replace("\n", "<br>") + "</p>"
                     + "<hr>"
                     + "<p style='font-size: 12px; color: #777;'>Este es un mensaje automático del sistema. Por favor no respondas a este correo.</p>"

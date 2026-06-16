@@ -43,7 +43,10 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         Users employee = usersRepository.findById(requestDto.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
 
-        // 1. ACTUALIZAR EL ESTADO DEL TRABAJO (En Progreso / Completado)
+        if (requestDto.getNewPrice() != null) {
+            job.setPay(requestDto.getNewPrice());
+        }
+
         if (requestDto.getStatus() != null) {
             job.setStatus(requestDto.getStatus());
             jobsRepository.save(job);

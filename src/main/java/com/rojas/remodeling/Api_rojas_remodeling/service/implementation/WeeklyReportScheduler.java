@@ -53,7 +53,7 @@ public class WeeklyReportScheduler {
                     .append("</tr>");
         }
         emailBody.append("</table>");
-        emailBody.append("<br><p>Saludos,<br>Sistema Automático Rojas Remodeling.</p>");
+        emailBody.append("<br><p>Saludos,<br>Sistema Automático RemoMN.</p>");
 
         List<Users> admins = usersRepository.findAll().stream()
                 .filter(u -> u.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_ADMIN") & r.getName().equals("ROLE_JEFE")))

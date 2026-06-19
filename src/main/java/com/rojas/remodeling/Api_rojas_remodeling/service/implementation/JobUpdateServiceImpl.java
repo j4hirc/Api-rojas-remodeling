@@ -136,7 +136,7 @@ public class JobUpdateServiceImpl implements JobUpdateService {
                     body += "📄 **DESCARGAR REPORTE FIRMADO (PDF):**\n" + pdfUrl + "\n\n";
                 }
 
-                body += "Puedes ingresar a tu Portal Rojas Remodeling para ver las fotos y detalles en el mapa.\n\nSaludos,\nSistema Automático Rojas Remodeling.";
+                body += "Puedes ingresar a tu Portal RemoMN para ver las fotos y detalles en el mapa.\n\nSaludos,\nSistema Automático RemoMN.";
 
                 emailService.sendEmail(manager.getEmail(), subject, body);
             }

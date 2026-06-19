@@ -1,46 +1,47 @@
-package com.rojas.remodeling.Api_rojas_remodeling.service.implementation;
+package com.rojas.remodeling.Api_rojas_remodeling.service.implementation; //[cite: 1]
 
-import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    // Lee la variable que pondremos en Render o en tu .env local
+    @Value("${brevo.api.key}")
+    private String apiKey;
 
-    @Value("${spring.mail.username}")
-    private String fromEmail;
+    public void sendEmail(String toEmail, String subject, String content) {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "https://api.brevo.com/v3/smtp/email";
 
-    @Async
-    public void sendEmail(String to, String subject, String body) {
+        // Configurar los headers con tu API Key
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("api-key", apiKey);
+
+        // Armar el JSON del cuerpo de la petición según la doc de Brevo
+        Map<String, Object> body = new HashMap<>();
+        body.put("sender", Map.of("name", "Api Rojas Remodeling", "email", "tu_correo@gmail.com")); // Pon el correo que registraste en Brevo
+        body.put("to", List.of(Map.of("email", toEmail)));
+        body.put("subject", subject);
+        body.put("htmlContent", content); // Usa "textContent" si mandas texto sin formato
+
+        // Empaquetar todo y disparar el POST
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom("RemoMN <" + fromEmail + ">");
-            helper.setReplyTo(fromEmail);
-            helper.setTo(to);
-            helper.setSubject(subject);
-
-            String htmlBody = "<div style='font-family: Arial, sans-serif; color: #333;'>"
-                    + "<h2>RemoMN</h2>"
-                    + "<p>" + body.replace("\n", "<br>") + "</p>"
-                    + "<hr>"
-                    + "<p style='font-size: 12px; color: #777;'>Este es un mensaje automático del sistema. Por favor no respondas a este correo.</p>"
-                    + "</div>";
-
-            helper.setText(htmlBody, true);
-
-            mailSender.send(message);
+            restTemplate.postForEntity(url, request, String.class);
+            System.out.println("¡Correo enviado con éxito vía Brevo!");
         } catch (Exception e) {
-            System.err.println("Error al enviar el correo a " + to + ": " + e.getMessage());
+            System.err.println("Error al enviar el correo: " + e.getMessage());
         }
     }
 }

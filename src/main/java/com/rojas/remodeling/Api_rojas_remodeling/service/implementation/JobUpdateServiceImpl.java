@@ -141,7 +141,6 @@ public class JobUpdateServiceImpl implements JobUpdateService {
                 emailService.sendEmail(manager.getEmail(), subject, body);
             }
         } catch (Exception e) {
-            // Si el correo falla (credenciales incorrectas, etc.), se imprime en consola PERO el reporte sí se guarda.
             System.err.println("Advertencia: No se pudo enviar el correo. Causa: " + e.getMessage());
         }
     }

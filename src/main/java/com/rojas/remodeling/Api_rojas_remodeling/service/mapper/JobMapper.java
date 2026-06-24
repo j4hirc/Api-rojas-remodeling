@@ -41,6 +41,7 @@ public class JobMapper {
         dto.setAddress(jobs.getAddress());
         dto.setLatitude(jobs.getLatitude());
         dto.setLongitude(jobs.getLongitude());
+        dto.setSafeDepositBoxCodes(jobs.getSafeDepositBoxCodes());
         dto.setStatus(jobs.getStatus());
         dto.setPay(jobs.getPay());
 

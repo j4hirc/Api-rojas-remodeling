@@ -48,7 +48,7 @@ public class JobRequestDto {
     @NotNull(message = "El ID del manager es obligatorio")
     private Long managerId;
 
-    @NotEmpty(message = "Debes incluir al menos un material para el trabajo")
+    //@NotEmpty(message = "Debes incluir al menos un material para el trabajo")
     private List<Long> materialIds;
 
     private Long jobUpdateId;

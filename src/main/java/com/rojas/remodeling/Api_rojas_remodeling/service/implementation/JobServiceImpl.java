@@ -115,7 +115,7 @@ public class JobServiceImpl implements JobService {
 
         jobMapper.updateEntityFromDto(dto, existingJob, employee, manager);
 
-        syncJobMaterials(existingJob, dto.getMaterialIds());
+        syncJobMaterials(existingJob, dto.getMaterialIds() != null ? dto.getMaterialIds() : List.of());
 
         Jobs savedJob = jobsRepository.save(existingJob);
 

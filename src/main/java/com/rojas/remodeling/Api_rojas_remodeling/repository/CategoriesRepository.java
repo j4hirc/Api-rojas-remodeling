@@ -20,6 +20,7 @@ public interface CategoriesRepository extends JpaRepository<Categories, Long> {
 
     @Override
     @NonNull
+    @Query("SELECT c FROM Categories c ORDER BY c.name ASC")
     List<Categories> findAll();
 
     @Override

@@ -12,7 +12,8 @@ public class MaterialsMapper {
     public Materials toEntity(MaterialsRequestDto materialsRequestDto) {
         Materials materials = new Materials();
         materials.setName(materialsRequestDto.getName());
-
+        materials.setCount(materialsRequestDto.getCount());
+        materials.setPrice(materialsRequestDto.getPrice());
         return materials;
     }
 
@@ -21,8 +22,9 @@ public class MaterialsMapper {
 
         materialsResponseDto.setMaterialId(materials.getId());
         materialsResponseDto.setName(materials.getName());
+        materialsResponseDto.setCount(materials.getCount());
+        materialsResponseDto.setPrice(materials.getPrice());
         materialsResponseDto.setCategoryName(materials.getCategory().getName());
-
 
         return materialsResponseDto;
     }

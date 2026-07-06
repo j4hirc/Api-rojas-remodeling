@@ -7,5 +7,8 @@ public class MaterialsResponseDto {
 
     private Long  materialId;
     private String name;
+    private  Integer count;
+    private Double price;
+
     private String categoryName;
 }

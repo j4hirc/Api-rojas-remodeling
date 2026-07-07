@@ -1,7 +1,6 @@
 package com.rojas.remodeling.Api_rojas_remodeling.service.implementation;
 
 import com.rojas.remodeling.Api_rojas_remodeling.dto.request.JobUpdateRequestDto;
-import com.rojas.remodeling.Api_rojas_remodeling.dto.request.MaterialSelectionDto; // 🔥 NUEVO IMPORT NECESARIO
 import com.rojas.remodeling.Api_rojas_remodeling.dto.response.EvidencesResponseDto;
 import com.rojas.remodeling.Api_rojas_remodeling.dto.response.JobUpdateResponseDto;
 import com.rojas.remodeling.Api_rojas_remodeling.exception.ResourceNotFoundException;
@@ -25,11 +24,8 @@ public class JobUpdateServiceImpl implements JobUpdateService {
     private final JobsRepository jobsRepository;
     private final UsersRepository usersRepository;
     private final EvidencesRepository evidencesRepository;
-
-    // Agregamos los repositorios necesarios para guardar los materiales
     private final MaterialsRepository materialsRepository;
     private final JobsMaterialRepository jobMaterialRepository;
-
     private final SupabaseStorageService supabaseStorageService;
     private final JobUpdateMapper jobUpdateMapper;
     private final EvidencesMapper evidencesMapper;
@@ -44,6 +40,7 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         Users employee = usersRepository.findById(requestDto.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
 
+        // 🔥 1. PRECIO: Solo lo actualiza si viene un número, si mandamos NULL no lo toca
         if (requestDto.getNewPrice() != null) {
             job.setPay(requestDto.getNewPrice());
         }
@@ -53,17 +50,17 @@ public class JobUpdateServiceImpl implements JobUpdateService {
             jobsRepository.save(job);
         }
 
-        // 🔥 2. ACTUALIZAR Y GUARDAR MATERIALES (CON CANTIDAD Y UNIDAD)
+        // 🔥 2. GUARDAR MATERIALES (CON CANTIDAD Y UNIDAD REALES)
         if (requestDto.getMaterials() != null) {
 
-            // Primero borramos los anteriores asociados a este trabajo para no duplicarlos
+            // Borramos los viejos para evitar duplicados
             List<JobMaterial> existingMaterials = jobMaterialRepository.findByJobId(job.getId());
             if (!existingMaterials.isEmpty()) {
                 jobMaterialRepository.deleteAll(existingMaterials);
                 jobMaterialRepository.flush();
             }
 
-            // Luego guardamos los nuevos que mandó el empleado
+            // Guardamos los nuevos con su Cantidad y Unidad
             if (!requestDto.getMaterials().isEmpty()) {
                 List<JobMaterial> jobMaterials = requestDto.getMaterials().stream().map(matDto -> {
                     Materials material = materialsRepository.findById(matDto.getMaterialId())
@@ -72,8 +69,8 @@ public class JobUpdateServiceImpl implements JobUpdateService {
                     JobMaterial jm = new JobMaterial();
                     jm.setJob(job);
                     jm.setMaterial(material);
-                    jm.setQuantity(matDto.getQuantity()); // Guarda cantidad exacta
-                    jm.setUnit(matDto.getUnit());         // Guarda la unidad
+                    jm.setQuantity(matDto.getQuantity());
+                    jm.setUnit(matDto.getUnit());
                     return jm;
                 }).toList();
 
@@ -85,17 +82,14 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         JobUpdates savedUpdate = jobUpdateRepository.save(jobUpdate);
 
         List<EvidencesResponseDto> evidencesResponseList = new ArrayList<>();
-        String pdfPublicUrl = null; // Guardará el link del PDF para enviarlo por correo
+        String pdfPublicUrl = null;
 
         if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
                 String publicUrl = supabaseStorageService.uploadFile(file);
-
-                // Si el archivo que se subió es el PDF, guardamos la URL
                 if (file.getOriginalFilename() != null && file.getOriginalFilename().toLowerCase().endsWith(".pdf")) {
                     pdfPublicUrl = publicUrl;
                 }
-
                 Evidences evidence = new Evidences();
                 evidence.setImageUri(publicUrl);
                 evidence.setJobUpdate(savedUpdate);
@@ -109,6 +103,7 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         return jobUpdateMapper.toResponse(savedUpdate, evidencesResponseList);
     }
 
+    // ... MANTÉN TU MÉTODO updateJobUpdate y notifyManager IGUALES ...
     @Override
     @Transactional
     public JobUpdateResponseDto updateJobUpdate(Long id, JobUpdateRequestDto requestDto, List<MultipartFile> files) {
@@ -151,17 +146,12 @@ public class JobUpdateServiceImpl implements JobUpdateService {
                 String subject = "Reporte de Avance PDF: " + job.getClientName();
                 String body = "Hola " + manager.getFirstName() + ",\n\n" +
                         "El empleado **" + employee.getFirstName() + " " + employee.getLastName() + "** ha reportado un avance en la obra: **" + job.getClientName() + "**.\n\n";
-
-                if(pdfUrl != null) {
-                    body += "📄 **DESCARGAR REPORTE FIRMADO (PDF):**\n" + pdfUrl + "\n\n";
-                }
-
+                if(pdfUrl != null) { body += "📄 **DESCARGAR REPORTE FIRMADO (PDF):**\n" + pdfUrl + "\n\n"; }
                 body += "Puedes ingresar a tu Portal RemoMN para ver las fotos y detalles en el mapa.\n\nSaludos,\nSistema Automático RemoMN.";
-
                 emailService.sendEmail(manager.getEmail(), subject, body);
             }
         } catch (Exception e) {
-            System.err.println("Advertencia: No se pudo enviar el correo. Causa: " + e.getMessage());
+            System.err.println("Advertencia: No se pudo enviar el correo.");
         }
     }
 }

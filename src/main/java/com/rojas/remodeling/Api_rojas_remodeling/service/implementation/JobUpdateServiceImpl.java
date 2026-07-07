@@ -1,6 +1,7 @@
 package com.rojas.remodeling.Api_rojas_remodeling.service.implementation;
 
 import com.rojas.remodeling.Api_rojas_remodeling.dto.request.JobUpdateRequestDto;
+import com.rojas.remodeling.Api_rojas_remodeling.dto.request.MaterialSelectionDto;
 import com.rojas.remodeling.Api_rojas_remodeling.dto.response.EvidencesResponseDto;
 import com.rojas.remodeling.Api_rojas_remodeling.dto.response.JobUpdateResponseDto;
 import com.rojas.remodeling.Api_rojas_remodeling.exception.ResourceNotFoundException;
@@ -16,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,11 +26,8 @@ public class JobUpdateServiceImpl implements JobUpdateService {
     private final JobsRepository jobsRepository;
     private final UsersRepository usersRepository;
     private final EvidencesRepository evidencesRepository;
-
-    // Repositorios de materiales
     private final MaterialsRepository materialsRepository;
     private final JobsMaterialRepository jobMaterialRepository;
-
     private final SupabaseStorageService supabaseStorageService;
     private final JobUpdateMapper jobUpdateMapper;
     private final EvidencesMapper evidencesMapper;
@@ -43,45 +42,48 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         Users employee = usersRepository.findById(requestDto.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
 
-        // 🔥 1. SOLUCIÓN AL PRECIO EN 0:
-        // Solo actualizamos el pago si mandan un número MAYOR a 0. Si llega 0 o null, NO LO TOCA.
+        // 🔥 CORRECCIÓN 1: EL PRECIO
+        // Solo si el Empleado MANDÓ una alerta de cambio de precio (> 0), lo actualizamos.
+        // Si mandó null o 0, SIGNIFICA QUE NO LO TOCÓ, así que dejamos el que ya estaba.
         if (requestDto.getNewPrice() != null && requestDto.getNewPrice() > 0) {
             job.setPay(requestDto.getNewPrice());
         }
 
-        if (requestDto.getStatus() != null) {
+        if (requestDto.getStatus() != null && !requestDto.getStatus().trim().isEmpty()) {
             job.setStatus(requestDto.getStatus());
         }
-
-        // Guardamos los cambios de estado o pago
         jobsRepository.save(job);
 
-        // 🔥 2. SOLUCIÓN A LOS MATERIALES:
-        // Leemos la nueva lista de "materials" que trae cantidad y unidad
-        if (requestDto.getMaterials() != null) {
-
-            // Borramos los viejos para evitar duplicados en la base de datos
+        // 🔥 CORRECCIÓN 2: LOS MATERIALES
+        // NO BORRAMOS TODOS. Si el empleado reportó un material, buscamos si ya estaba
+        // y le actualizamos la cantidad. Si es nuevo, lo agregamos.
+        if (requestDto.getMaterials() != null && !requestDto.getMaterials().isEmpty()) {
             List<JobMaterial> existingMaterials = jobMaterialRepository.findByJobId(job.getId());
-            if (!existingMaterials.isEmpty()) {
-                jobMaterialRepository.deleteAll(existingMaterials);
-                jobMaterialRepository.flush();
-            }
 
-            // Guardamos los nuevos con su Cantidad y Unidad correcta
-            if (!requestDto.getMaterials().isEmpty()) {
-                List<JobMaterial> jobMaterials = requestDto.getMaterials().stream().map(matDto -> {
-                    Materials material = materialsRepository.findById(matDto.getMaterialId())
-                            .orElseThrow(() -> new ResourceNotFoundException("Material no encontrado"));
+            for (MaterialSelectionDto dtoMat : requestDto.getMaterials()) {
+                Materials material = materialsRepository.findById(dtoMat.getMaterialId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Material no encontrado"));
 
-                    JobMaterial jm = new JobMaterial();
-                    jm.setJob(job);
-                    jm.setMaterial(material);
-                    jm.setQuantity(matDto.getQuantity());
-                    jm.setUnit(matDto.getUnit());
-                    return jm;
-                }).toList();
+                // Busca si este material ya estaba asignado a este trabajo
+                Optional<JobMaterial> existingJm = existingMaterials.stream()
+                        .filter(jm -> jm.getMaterial().getId().equals(material.getId()))
+                        .findFirst();
 
-                jobMaterialRepository.saveAll(jobMaterials);
+                if (existingJm.isPresent()) {
+                    // Si ya estaba, le actualizamos la cantidad y unidad
+                    JobMaterial jmToUpdate = existingJm.get();
+                    jmToUpdate.setQuantity(dtoMat.getQuantity());
+                    jmToUpdate.setUnit(dtoMat.getUnit() != null ? dtoMat.getUnit() : "N/A");
+                    jobMaterialRepository.save(jmToUpdate);
+                } else {
+                    // Si el empleado agregó un material que el jefe no le había puesto, lo creamos
+                    JobMaterial newJm = new JobMaterial();
+                    newJm.setJob(job);
+                    newJm.setMaterial(material);
+                    newJm.setQuantity(dtoMat.getQuantity());
+                    newJm.setUnit(dtoMat.getUnit() != null ? dtoMat.getUnit() : "N/A");
+                    jobMaterialRepository.save(newJm);
+                }
             }
         }
 
@@ -110,10 +112,11 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         return jobUpdateMapper.toResponse(savedUpdate, evidencesResponseList);
     }
 
+    // ... (El resto de tus métodos updateJobUpdate y notifyManager quedan igual) ...
     @Override
     @Transactional
     public JobUpdateResponseDto updateJobUpdate(Long id, JobUpdateRequestDto requestDto, List<MultipartFile> files) {
-        JobUpdates existingUpdate = jobUpdateRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Actualización no encontrada"));
+        JobUpdates existingUpdate = jobUpdateRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Actualización de trabajo no encontrada"));
         Jobs job = jobsRepository.findById(requestDto.getJobId()).orElseThrow(() -> new ResourceNotFoundException("Trabajo no encontrado"));
         Users employee = usersRepository.findById(requestDto.getEmployeeId()).orElseThrow(() -> new ResourceNotFoundException("Empleado no encontrado"));
 
@@ -157,7 +160,7 @@ public class JobUpdateServiceImpl implements JobUpdateService {
                 emailService.sendEmail(manager.getEmail(), subject, body);
             }
         } catch (Exception e) {
-            System.err.println("Advertencia: No se pudo enviar el correo.");
+            System.err.println("Advertencia: No se pudo enviar el correo. Causa: " + e.getMessage());
         }
     }
 }

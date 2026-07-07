@@ -14,19 +14,14 @@ public class JobRequestDto {
 
     @NotBlank(message = "El nombre del cliente no puede estar vacío")
     private String clientName;
-
     @NotBlank(message = "El teléfono del cliente no puede estar vacío")
     private String clientPhone;
-
     @NotBlank(message = "La descripción del trabajo no puede estar vacía")
     private String description;
-
     @NotBlank(message = "La dirección no puede estar vacía")
     private String address;
-
     @NotNull(message = "La latitud es obligatoria para la ubicación")
     private Double latitude;
-
     @NotNull(message = "La longitud es obligatoria para la ubicación")
     private Double longitude;
 
@@ -34,23 +29,17 @@ public class JobRequestDto {
 
     @NotBlank(message = "El estado no puede estar vacío")
     private String status;
-
     @Positive(message = "El pago debe ser un valor positivo")
     private Double pay;
-
-    // NUEVO CAMPO
     @NotNull(message = "La fecha del trabajo es obligatoria")
     private LocalDate jobDate;
-
     @NotNull(message = "El ID del empleado es obligatorio")
     private Long employeeId;
-
     @NotNull(message = "El ID del manager es obligatorio")
     private Long managerId;
 
-    //@NotEmpty(message = "Debes incluir al menos un material para el trabajo")
+    // 🔥 AHORA RECIBE LOS OBJETOS CON CANTIDAD
     private List<MaterialSelectionDto> materials;
-
     private Long jobUpdateId;
 
 

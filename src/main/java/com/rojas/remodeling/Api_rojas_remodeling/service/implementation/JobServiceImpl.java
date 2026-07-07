@@ -102,9 +102,7 @@ public class JobServiceImpl implements JobService {
         Jobs job = findJobById(id);
         List<JobUpdates> updates = jobUpdateRepository.findByJobId(job.getId());
         List<Long> updateIds = updates.stream().map(JobUpdates::getId).toList();
-        if (!updateIds.isEmpty()) {
-            evidencesRepository.deleteAllByJobUpdateIds(updateIds);
-        }
+        if (!updateIds.isEmpty()) { evidencesRepository.deleteAllByJobUpdateIds(updateIds); }
         jobUpdateRepository.deleteByJobId(job.getId());
         jobMaterialRepository.deleteByJobId(job.getId());
         jobsRepository.delete(job);
@@ -112,7 +110,6 @@ public class JobServiceImpl implements JobService {
 
     private List<JobResponseDto> buildJobResponses(List<Jobs> jobs) {
         if (jobs.isEmpty()) return List.of();
-
         List<Long> jobIds = jobs.stream().map(Jobs::getId).toList();
         List<JobMaterial> allJobMaterials = jobMaterialRepository.findAllByJobIds(jobIds);
 
@@ -154,9 +151,9 @@ public class JobServiceImpl implements JobService {
         saveJobMaterials(job, incomingMaterials);
     }
 
+    // 🔥 AQUÍ ESTABA EL ERROR. AHORA SÍ GUARDARÁ QUANTITY Y UNIT.
     private void saveJobMaterials(Jobs job, List<MaterialSelectionDto> materialDtos) {
         if (materialDtos == null || materialDtos.isEmpty()) return;
-
         List<JobMaterial> jobMaterials = materialDtos.stream().map(dto -> {
             Materials material = materialsRepository.findById(dto.getMaterialId())
                     .orElseThrow(() -> new ResourceNotFoundException("Material no encontrado"));
@@ -167,7 +164,6 @@ public class JobServiceImpl implements JobService {
             jm.setUnit(dto.getUnit());
             return jm;
         }).toList();
-
         jobMaterialRepository.saveAll(jobMaterials);
     }
 
@@ -189,7 +185,6 @@ public class JobServiceImpl implements JobService {
                     mDto.setUnit(jm.getUnit());
                     return mDto;
                 }).toList();
-
         return jobMapper.jobsToJobResponseDto(job, materialsResponse, updates);
     }
 

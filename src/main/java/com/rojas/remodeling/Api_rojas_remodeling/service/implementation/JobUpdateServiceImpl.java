@@ -1,6 +1,7 @@
 package com.rojas.remodeling.Api_rojas_remodeling.service.implementation;
 
 import com.rojas.remodeling.Api_rojas_remodeling.dto.request.JobUpdateRequestDto;
+import com.rojas.remodeling.Api_rojas_remodeling.dto.request.MaterialSelectionDto; // 🔥 NUEVO IMPORT NECESARIO
 import com.rojas.remodeling.Api_rojas_remodeling.dto.response.EvidencesResponseDto;
 import com.rojas.remodeling.Api_rojas_remodeling.dto.response.JobUpdateResponseDto;
 import com.rojas.remodeling.Api_rojas_remodeling.exception.ResourceNotFoundException;
@@ -52,12 +53,32 @@ public class JobUpdateServiceImpl implements JobUpdateService {
             jobsRepository.save(job);
         }
 
-        // 2. GUARDAR MATERIALES ELEGIDOS POR EL EMPLEADO EN LA OBRA
-        if (requestDto.getMaterialIds() != null && !requestDto.getMaterialIds().isEmpty()) {
-            List<Materials> usedMaterials = materialsRepository.findAllById(requestDto.getMaterialIds());
-            List<JobMaterial> jobMaterials = usedMaterials.stream()
-                    .map(material -> new JobMaterial(null, job, material)).toList();
-            jobMaterialRepository.saveAll(jobMaterials);
+        // 🔥 2. ACTUALIZAR Y GUARDAR MATERIALES (CON CANTIDAD Y UNIDAD)
+        if (requestDto.getMaterials() != null) {
+
+            // Primero borramos los anteriores asociados a este trabajo para no duplicarlos
+            List<JobMaterial> existingMaterials = jobMaterialRepository.findByJobId(job.getId());
+            if (!existingMaterials.isEmpty()) {
+                jobMaterialRepository.deleteAll(existingMaterials);
+                jobMaterialRepository.flush();
+            }
+
+            // Luego guardamos los nuevos que mandó el empleado
+            if (!requestDto.getMaterials().isEmpty()) {
+                List<JobMaterial> jobMaterials = requestDto.getMaterials().stream().map(matDto -> {
+                    Materials material = materialsRepository.findById(matDto.getMaterialId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Material no encontrado"));
+
+                    JobMaterial jm = new JobMaterial();
+                    jm.setJob(job);
+                    jm.setMaterial(material);
+                    jm.setQuantity(matDto.getQuantity()); // Guarda cantidad exacta
+                    jm.setUnit(matDto.getUnit());         // Guarda la unidad
+                    return jm;
+                }).toList();
+
+                jobMaterialRepository.saveAll(jobMaterials);
+            }
         }
 
         JobUpdates jobUpdate = jobUpdateMapper.toEntity(requestDto, job, employee);
@@ -82,7 +103,6 @@ public class JobUpdateServiceImpl implements JobUpdateService {
                 evidencesResponseList.add(evidencesMapper.toResponse(savedEvidence));
             }
         }
-
 
         notifyManager(job, employee, pdfPublicUrl);
 

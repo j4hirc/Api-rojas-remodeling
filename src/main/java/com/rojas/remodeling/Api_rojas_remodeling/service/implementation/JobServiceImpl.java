@@ -1,6 +1,7 @@
 package com.rojas.remodeling.Api_rojas_remodeling.service.implementation;
 
 import com.rojas.remodeling.Api_rojas_remodeling.dto.request.JobRequestDto;
+import com.rojas.remodeling.Api_rojas_remodeling.dto.request.MaterialSelectionDto;
 import com.rojas.remodeling.Api_rojas_remodeling.dto.response.EvidencesResponseDto;
 import com.rojas.remodeling.Api_rojas_remodeling.dto.response.JobResponseDto;
 import com.rojas.remodeling.Api_rojas_remodeling.dto.response.JobUpdateResponseDto;
@@ -19,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import java.util.List;
 
 @Service
@@ -36,38 +36,21 @@ public class JobServiceImpl implements JobService {
     private final MaterialsMapper materialsMapper;
     private final EvidencesMapper evidencesMapper;
 
-
     @Override
     @Transactional(readOnly = true)
     public JobResponseDto findById(Long id) {
-
         Jobs job = findJobById(id);
-
-        List<Materials> materials =
-                jobMaterialRepository.findByJobId(job.getId())
-                        .stream()
-                        .map(JobMaterial::getMaterial)
-                        .toList();
-
-        List<JobUpdateResponseDto> updates =
-                getJobUpdatesResponse(job.getId());
-
-        return buildSingleJobResponse(
-                job,
-                materials,
-                updates
-        );
+        List<JobMaterial> jobMaterials = jobMaterialRepository.findByJobId(job.getId());
+        List<JobUpdateResponseDto> updates = getJobUpdatesResponse(job.getId());
+        return buildSingleJobResponse(job, jobMaterials, updates);
     }
-
 
     @Override
     @Transactional(readOnly = true)
     public List<JobResponseDto> findAll() {
         List<Jobs> allJobs = jobsRepository.findAll();
-
         return buildJobResponses(allJobs);
     }
-
 
     @Override
     public List<JobResponseDto> findByNameEmployee(String nameEmployee) {
@@ -75,97 +58,76 @@ public class JobServiceImpl implements JobService {
         return buildJobResponses(jobs);
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public List<JobResponseDto> findByEmployeeId(Long employeeId) {
         List<Jobs> jobs = jobsRepository.findByEmployeeId(employeeId);
-
         return buildJobResponses(jobs);
     }
-
 
     @Override
     @Transactional
     public JobResponseDto createJob(JobRequestDto dto) {
-
         Users employee = findUserById(dto.getEmployeeId(), "Empleado");
         Users manager = findUserById(dto.getManagerId(), "Manager");
-
         Jobs job = jobMapper.JobRequestDtoToJobs(dto, employee, manager);
-
         Jobs savedJob = jobsRepository.save(job);
 
-        List<Materials> materials = getMaterials(dto.getMaterialIds());
+        saveJobMaterials(savedJob, dto.getMaterials());
 
-        saveJobMaterials(savedJob, materials);
-
-        return buildSingleJobResponse(savedJob, materials, List.of());
+        List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
+        return buildSingleJobResponse(savedJob, finalMaterials, List.of());
     }
-
 
     @Override
     @Transactional
     public JobResponseDto updateJob(Long id, JobRequestDto dto) {
-
         Jobs existingJob = findJobById(id);
-
         Users employee = findUserById(dto.getEmployeeId(), "Empleado");
         Users manager = findUserById(dto.getManagerId(), "Manager");
 
         jobMapper.updateEntityFromDto(dto, existingJob, employee, manager);
-
-        syncJobMaterials(existingJob, dto.getMaterialIds() != null ? dto.getMaterialIds() : List.of());
-
         Jobs savedJob = jobsRepository.save(existingJob);
 
-        List<Materials> finalMaterials = getMaterials(dto.getMaterialIds());
+        syncJobMaterials(savedJob, dto.getMaterials());
 
+        List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
         List<JobUpdateResponseDto> updates = getJobUpdatesResponse(savedJob.getId());
-
         return buildSingleJobResponse(savedJob, finalMaterials, updates);
     }
 
     @Override
     @Transactional
     public void deleteJob(Long id) {
-
         Jobs job = findJobById(id);
-
-        List<JobUpdates> updates =
-                jobUpdateRepository.findByJobId(job.getId());
-
-        List<Long> updateIds = updates.stream()
-                .map(JobUpdates::getId)
-                .toList();
-
+        List<JobUpdates> updates = jobUpdateRepository.findByJobId(job.getId());
+        List<Long> updateIds = updates.stream().map(JobUpdates::getId).toList();
         if (!updateIds.isEmpty()) {
             evidencesRepository.deleteAllByJobUpdateIds(updateIds);
         }
-
         jobUpdateRepository.deleteByJobId(job.getId());
-
         jobMaterialRepository.deleteByJobId(job.getId());
-
         jobsRepository.delete(job);
     }
 
-
     private List<JobResponseDto> buildJobResponses(List<Jobs> jobs) {
+        if (jobs.isEmpty()) return List.of();
+
         List<Long> jobIds = jobs.stream().map(Jobs::getId).toList();
         List<JobMaterial> allJobMaterials = jobMaterialRepository.findAllByJobIds(jobIds);
 
         Map<Long, List<MaterialsResponseDto>> materialsByJobId =
                 allJobMaterials.stream().collect(Collectors.groupingBy(jm -> jm.getJob().getId(),
-                        Collectors.mapping(jm -> materialsMapper.toResponseDto(jm.getMaterial()), Collectors.toList())));
+                        Collectors.mapping(jm -> {
+                            MaterialsResponseDto mDto = materialsMapper.toResponseDto(jm.getMaterial());
+                            mDto.setQuantity(jm.getQuantity());
+                            mDto.setUnit(jm.getUnit());
+                            return mDto;
+                        }, Collectors.toList())));
 
         List<JobUpdates> allJobUpdates = jobUpdateRepository.findAllByJobIds(jobIds);
-
         List<Long> updateIds = allJobUpdates.stream().map(JobUpdates::getId).toList();
-
-        List<Evidences> allEvidences = updateIds.isEmpty()
-                ? List.of()
-                : evidencesRepository.findAllByJobUpdateIds(updateIds);
+        List<Evidences> allEvidences = updateIds.isEmpty() ? List.of() : evidencesRepository.findAllByJobUpdateIds(updateIds);
 
         Map<Long, List<EvidencesResponseDto>> evidencesByUpdateId = allEvidences.stream()
                 .collect(Collectors.groupingBy(ev -> ev.getJobUpdate().getId(),
@@ -185,64 +147,51 @@ public class JobServiceImpl implements JobService {
         }).toList();
     }
 
-
-    private void syncJobMaterials(Jobs job, List<Long> incomingMaterialIds) {
-
+    private void syncJobMaterials(Jobs job, List<MaterialSelectionDto> incomingMaterials) {
         List<JobMaterial> existingJobMaterials = jobMaterialRepository.findByJobId(job.getId());
-
-        List<Long> existingMaterialIds = existingJobMaterials.stream().map(jm -> jm.getMaterial().getId()).toList();
-
-        List<JobMaterial> materialsToDelete = existingJobMaterials.stream()
-                .filter(jm -> !incomingMaterialIds.contains(jm.getMaterial().getId())).toList();
-
-        if (!materialsToDelete.isEmpty()) {
-            jobMaterialRepository.deleteAll(materialsToDelete);
-        }
-
-        List<Long> newMaterialIds = incomingMaterialIds.stream()
-                .filter(id -> !existingMaterialIds.contains(id)).toList();
-
-        if (newMaterialIds.isEmpty()) {
-            return;
-        }
-
-        List<Materials> newMaterials = materialsRepository.findAllById(newMaterialIds);
-
-        saveJobMaterials(job, newMaterials);
+        jobMaterialRepository.deleteAll(existingJobMaterials);
+        jobMaterialRepository.flush();
+        saveJobMaterials(job, incomingMaterials);
     }
 
+    private void saveJobMaterials(Jobs job, List<MaterialSelectionDto> materialDtos) {
+        if (materialDtos == null || materialDtos.isEmpty()) return;
 
-    private void saveJobMaterials(Jobs job, List<Materials> materials) {
-        if (materials.isEmpty()) {
-            return;
-        }
-        List<JobMaterial> jobMaterials = materials.stream()
-                .map(material -> new JobMaterial(null, job, material))
-                .toList();
+        List<JobMaterial> jobMaterials = materialDtos.stream().map(dto -> {
+            Materials material = materialsRepository.findById(dto.getMaterialId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Material no encontrado"));
+            JobMaterial jm = new JobMaterial();
+            jm.setJob(job);
+            jm.setMaterial(material);
+            jm.setQuantity(dto.getQuantity());
+            jm.setUnit(dto.getUnit());
+            return jm;
+        }).toList();
+
         jobMaterialRepository.saveAll(jobMaterials);
     }
 
-
     private List<JobUpdateResponseDto> getJobUpdatesResponse(Long jobId) {
         List<JobUpdates> updates = jobUpdateRepository.findByJobId(jobId);
-
         return updates.stream().map(update -> {
-                    List<EvidencesResponseDto> evidences = evidencesRepository
-                            .findAllJobUpdateId(update.getId()).stream()
-                            .map(evidencesMapper::toResponse).toList();
-                    return jobUpdateMapper.toResponse(update, evidences);
-                })
-                .toList();
+            List<EvidencesResponseDto> evidences = evidencesRepository
+                    .findAllJobUpdateId(update.getId()).stream()
+                    .map(evidencesMapper::toResponse).toList();
+            return jobUpdateMapper.toResponse(update, evidences);
+        }).toList();
     }
 
-
-    private JobResponseDto buildSingleJobResponse(Jobs job, List<Materials> materials, List<JobUpdateResponseDto> updates) {
-        List<MaterialsResponseDto> materialsResponse = materials.stream()
-                .map(materialsMapper::toResponseDto).toList();
+    private JobResponseDto buildSingleJobResponse(Jobs job, List<JobMaterial> jobMaterials, List<JobUpdateResponseDto> updates) {
+        List<MaterialsResponseDto> materialsResponse = jobMaterials.stream()
+                .map(jm -> {
+                    MaterialsResponseDto mDto = materialsMapper.toResponseDto(jm.getMaterial());
+                    mDto.setQuantity(jm.getQuantity());
+                    mDto.setUnit(jm.getUnit());
+                    return mDto;
+                }).toList();
 
         return jobMapper.jobsToJobResponseDto(job, materialsResponse, updates);
     }
-
 
     private Jobs findJobById(Long jobId) {
         return jobsRepository.findById(jobId)
@@ -253,13 +202,4 @@ public class JobServiceImpl implements JobService {
         return usersRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(role + " no encontrado con ID: " + userId));
     }
-
-
-    private List<Materials> getMaterials(List<Long> materialIds) {
-        if (materialIds == null || materialIds.isEmpty()) {
-            return List.of();
-        }
-        return materialsRepository.findAllById(materialIds);
-    }
-
 }

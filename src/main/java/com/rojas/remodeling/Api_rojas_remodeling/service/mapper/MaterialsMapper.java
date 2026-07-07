@@ -1,6 +1,5 @@
 package com.rojas.remodeling.Api_rojas_remodeling.service.mapper;
 
-
 import com.rojas.remodeling.Api_rojas_remodeling.dto.request.MaterialsRequestDto;
 import com.rojas.remodeling.Api_rojas_remodeling.dto.response.MaterialsResponseDto;
 import com.rojas.remodeling.Api_rojas_remodeling.model.Materials;
@@ -22,12 +21,12 @@ public class MaterialsMapper {
 
         materialsResponseDto.setMaterialId(materials.getId());
         materialsResponseDto.setName(materials.getName());
+
         materialsResponseDto.setCount(materials.getCount());
+
         materialsResponseDto.setPrice(materials.getPrice());
         materialsResponseDto.setCategoryName(materials.getCategory().getName());
 
         return materialsResponseDto;
     }
-
-
 }

@@ -40,4 +40,7 @@ public class JobResponseDto {
     private List<MaterialsResponseDto> materials;
 
     private List<JobUpdateResponseDto> updateJob;
+
+    private Double quantity;
+    private String unit;
 }

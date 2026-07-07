@@ -22,5 +22,5 @@ public class JobUpdateRequestDto {
     @NotBlank(message = "El estado del trabajo es requerido")
     private String status;
 
-    private List<Long> materialIds;
+    private List<MaterialSelectionDto> materials;
 }

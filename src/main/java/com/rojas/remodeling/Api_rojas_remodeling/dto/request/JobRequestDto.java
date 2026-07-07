@@ -49,7 +49,7 @@ public class JobRequestDto {
     private Long managerId;
 
     //@NotEmpty(message = "Debes incluir al menos un material para el trabajo")
-    private List<Long> materialIds;
+    private List<MaterialSelectionDto> materials;
 
     private Long jobUpdateId;
 

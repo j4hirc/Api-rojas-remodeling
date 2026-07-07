@@ -20,6 +20,12 @@ public class JobMaterial {
     @JoinColumn(name = "job_id", nullable = false)
     private Jobs job;
 
+    @Column(name = "quantity")
+    private Double quantity;
+
+    @Column(name = "unit")
+    private String unit;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "material_id", nullable = false)
     private Materials material;

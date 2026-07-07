@@ -24,8 +24,11 @@ public class JobUpdateServiceImpl implements JobUpdateService {
     private final JobsRepository jobsRepository;
     private final UsersRepository usersRepository;
     private final EvidencesRepository evidencesRepository;
+
+    // Repositorios de materiales
     private final MaterialsRepository materialsRepository;
     private final JobsMaterialRepository jobMaterialRepository;
+
     private final SupabaseStorageService supabaseStorageService;
     private final JobUpdateMapper jobUpdateMapper;
     private final EvidencesMapper evidencesMapper;
@@ -40,27 +43,31 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         Users employee = usersRepository.findById(requestDto.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
 
-        // 🔥 1. PRECIO: Solo lo actualiza si viene un número, si mandamos NULL no lo toca
-        if (requestDto.getNewPrice() != null) {
+        // 🔥 1. SOLUCIÓN AL PRECIO EN 0:
+        // Solo actualizamos el pago si mandan un número MAYOR a 0. Si llega 0 o null, NO LO TOCA.
+        if (requestDto.getNewPrice() != null && requestDto.getNewPrice() > 0) {
             job.setPay(requestDto.getNewPrice());
         }
 
         if (requestDto.getStatus() != null) {
             job.setStatus(requestDto.getStatus());
-            jobsRepository.save(job);
         }
 
-        // 🔥 2. GUARDAR MATERIALES (CON CANTIDAD Y UNIDAD REALES)
+        // Guardamos los cambios de estado o pago
+        jobsRepository.save(job);
+
+        // 🔥 2. SOLUCIÓN A LOS MATERIALES:
+        // Leemos la nueva lista de "materials" que trae cantidad y unidad
         if (requestDto.getMaterials() != null) {
 
-            // Borramos los viejos para evitar duplicados
+            // Borramos los viejos para evitar duplicados en la base de datos
             List<JobMaterial> existingMaterials = jobMaterialRepository.findByJobId(job.getId());
             if (!existingMaterials.isEmpty()) {
                 jobMaterialRepository.deleteAll(existingMaterials);
                 jobMaterialRepository.flush();
             }
 
-            // Guardamos los nuevos con su Cantidad y Unidad
+            // Guardamos los nuevos con su Cantidad y Unidad correcta
             if (!requestDto.getMaterials().isEmpty()) {
                 List<JobMaterial> jobMaterials = requestDto.getMaterials().stream().map(matDto -> {
                     Materials material = materialsRepository.findById(matDto.getMaterialId())
@@ -103,11 +110,10 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         return jobUpdateMapper.toResponse(savedUpdate, evidencesResponseList);
     }
 
-    // ... MANTÉN TU MÉTODO updateJobUpdate y notifyManager IGUALES ...
     @Override
     @Transactional
     public JobUpdateResponseDto updateJobUpdate(Long id, JobUpdateRequestDto requestDto, List<MultipartFile> files) {
-        JobUpdates existingUpdate = jobUpdateRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Actualización de trabajo no encontrada"));
+        JobUpdates existingUpdate = jobUpdateRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Actualización no encontrada"));
         Jobs job = jobsRepository.findById(requestDto.getJobId()).orElseThrow(() -> new ResourceNotFoundException("Trabajo no encontrado"));
         Users employee = usersRepository.findById(requestDto.getEmployeeId()).orElseThrow(() -> new ResourceNotFoundException("Empleado no encontrado"));
 

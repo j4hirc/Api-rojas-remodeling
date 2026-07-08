@@ -79,6 +79,8 @@ public class JobMapper {
 
         if (dto.getJobUpdateId() != null){
             entity.setPriority(dto.getPriority());
+        }else{
+            entity.setPriority(2);
         }
 
         entity.setEmployee(employee);

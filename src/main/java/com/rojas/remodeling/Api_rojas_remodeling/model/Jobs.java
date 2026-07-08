@@ -45,9 +45,6 @@ public class Jobs {
     @Column(nullable = false, name = "job_date")
     private LocalDate jobDate;
 
-    @Column(name = "priority", columnDefinition = "integer default 2")
-    private Integer priority;
-
     @ManyToOne
     @JoinColumn(name = "employee_id", nullable = false)
     private Users employee;

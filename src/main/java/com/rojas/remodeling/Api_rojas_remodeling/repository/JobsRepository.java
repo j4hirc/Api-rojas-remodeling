@@ -4,7 +4,6 @@ import com.rojas.remodeling.Api_rojas_remodeling.model.Jobs;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +15,6 @@ public interface JobsRepository extends JpaRepository<Jobs, Long> {
     @Override
     @NonNull
     @EntityGraph(attributePaths = {"employee", "manager"})
-    @Query("SELECT j FROM Jobs j ORDER BY j.jobDate ASC, j.priority ASC")
     List<Jobs> findAll();
 
     @Override
@@ -25,11 +23,9 @@ public interface JobsRepository extends JpaRepository<Jobs, Long> {
     Optional<Jobs> findById(@NonNull Long id);
 
     @EntityGraph(attributePaths = {"employee", "manager"})
-    @Query("SELECT j FROM Jobs j WHERE j.employee.id = :employeeId ORDER BY j.jobDate ASC, j.priority ASC")
     List<Jobs> findByEmployeeId(@Param("employeeId") Long employeeId);
 
     @EntityGraph(attributePaths = {"employee", "manager"})
-    @Query("SELECT j FROM Jobs j WHERE j.employee.firstName = :nameEmployee ORDER BY j.jobDate ASC, j.priority ASC")
     List<Jobs> findByEmployeeFirstName(@Param("nameEmployee")String name);
 
 }

@@ -27,11 +27,7 @@ public class JobMapper {
 
         entity.setJobDate(jobRequestDto.getJobDate());
 
-        if (jobRequestDto.getPriority() != null){
-            entity.setPriority(jobRequestDto.getPriority());
-        } else {
-            entity.setPriority(2);
-        }
+        entity.setPriority(jobRequestDto.getPriority());
 
         entity.setEmployee(employee);
         entity.setManager(manager);
@@ -77,11 +73,7 @@ public class JobMapper {
 
         entity.setJobDate(dto.getJobDate());
 
-        if (dto.getPriority() != null) {
-            entity.setPriority(dto.getPriority());
-        } else {
-            entity.setPriority(2);
-        }
+        entity.setPriority(dto.getPriority());
 
         entity.setEmployee(employee);
         entity.setManager(manager);

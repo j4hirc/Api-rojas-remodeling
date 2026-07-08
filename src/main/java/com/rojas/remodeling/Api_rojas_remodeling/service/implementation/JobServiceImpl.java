@@ -87,12 +87,6 @@ public class JobServiceImpl implements JobService {
         Users manager = findUserById(dto.getManagerId(), "Manager");
 
         jobMapper.updateEntityFromDto(dto, existingJob, employee, manager);
-
-        if (dto.getPriority() != null) {
-            existingJob.setPriority(dto.getPriority());
-        }else{
-            existingJob.setPriority(2);
-        }
         Jobs savedJob = jobsRepository.save(existingJob);
 
         syncJobMaterials(savedJob, dto.getMaterials());

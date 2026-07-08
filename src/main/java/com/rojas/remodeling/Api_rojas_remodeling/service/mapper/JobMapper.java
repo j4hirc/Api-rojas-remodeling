@@ -27,6 +27,12 @@ public class JobMapper {
 
         entity.setJobDate(jobRequestDto.getJobDate());
 
+        if (jobRequestDto.getJobUpdateId() != null){
+            entity.setPriority(jobRequestDto.getPriority());
+        }else{
+            entity.setPriority(2);
+        }
+
         entity.setEmployee(employee);
         entity.setManager(manager);
         return entity;
@@ -44,8 +50,9 @@ public class JobMapper {
         dto.setSafeDepositBoxCodes(jobs.getSafeDepositBoxCodes());
         dto.setStatus(jobs.getStatus());
         dto.setPay(jobs.getPay());
-
         dto.setJobDate(jobs.getJobDate());
+
+        dto.setPriority(jobs.getPriority());
 
         dto.setEmployeeId(jobs.getEmployee().getId());
         dto.setManagerId(jobs.getManager().getId());
@@ -69,6 +76,10 @@ public class JobMapper {
         entity.setPay(dto.getPay());
 
         entity.setJobDate(dto.getJobDate());
+
+        if (dto.getJobUpdateId() != null){
+            entity.setPriority(dto.getPriority());
+        }
 
         entity.setEmployee(employee);
         entity.setManager(manager);

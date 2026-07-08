@@ -43,4 +43,6 @@ public class JobResponseDto {
 
     private Double quantity;
     private String unit;
+
+    private Integer priority;
 }

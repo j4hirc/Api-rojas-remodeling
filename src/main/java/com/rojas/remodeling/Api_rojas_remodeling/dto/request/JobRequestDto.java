@@ -42,5 +42,8 @@ public class JobRequestDto {
     private List<MaterialSelectionDto> materials;
     private Long jobUpdateId;
 
+    // 🔥 NUEVO CAMPO: Prioridad del trabajo (Ej: 1 = Alta, 2 = Normal, 3 = Baja)
+    private Integer priority;
+
 
 }

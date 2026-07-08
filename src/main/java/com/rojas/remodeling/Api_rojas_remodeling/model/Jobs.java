@@ -45,6 +45,8 @@ public class Jobs {
     @Column(nullable = false, name = "job_date")
     private LocalDate jobDate;
 
+    private Integer priority;
+
     @ManyToOne
     @JoinColumn(name = "employee_id", nullable = false)
     private Users employee;

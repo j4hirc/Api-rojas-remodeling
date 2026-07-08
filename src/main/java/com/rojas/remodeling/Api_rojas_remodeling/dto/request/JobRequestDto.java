@@ -41,5 +41,7 @@ public class JobRequestDto {
     private List<MaterialSelectionDto> materials;
     private Long jobUpdateId;
 
+    private Integer priority;
+
 
 }

@@ -17,6 +17,7 @@ public class ApiRojasRemodelingApplication {
 		SpringApplication.run(ApiRojasRemodelingApplication.class, args);
 
 		System.out.println("Ya lo clone");
+		System.out.println("Prueba de que funciona");
 	}
 
 

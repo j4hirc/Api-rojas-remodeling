@@ -54,4 +54,6 @@ public class Jobs {
     @ManyToOne
     @JoinColumn(name = "manager_id", nullable = false)
     private Users manager;
+
+    private String blueprintUrl;
 }

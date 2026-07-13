@@ -17,6 +17,7 @@ import com.rojas.remodeling.Api_rojas_remodeling.service.mapper.MaterialsMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,6 +36,9 @@ public class JobServiceImpl implements JobService {
     private final JobUpdateMapper jobUpdateMapper;
     private final MaterialsMapper materialsMapper;
     private final EvidencesMapper evidencesMapper;
+
+    // 🔥 AGREGAMOS EL SERVICIO DE SUPABASE
+    private final SupabaseStorageService supabaseStorageService;
 
     @Override
     @Transactional(readOnly = true)
@@ -67,12 +71,18 @@ public class JobServiceImpl implements JobService {
 
     @Override
     @Transactional
-    public JobResponseDto createJob(JobRequestDto dto) {
+    public JobResponseDto createJob(JobRequestDto dto, MultipartFile file) {
         Users employee = findUserById(dto.getEmployeeId(), "Empleado");
         Users manager = findUserById(dto.getManagerId(), "Manager");
         Jobs job = jobMapper.JobRequestDtoToJobs(dto, employee, manager);
-        Jobs savedJob = jobsRepository.save(job);
 
+        // 🔥 SUBIMOS EL PLANO A SUPABASE
+        if (file != null && !file.isEmpty()) {
+            String url = supabaseStorageService.uploadFile(file);
+            job.setBlueprintUrl(url); // <-- Asegúrate de que Jobs.java tenga este campo
+        }
+
+        Jobs savedJob = jobsRepository.save(job);
         saveJobMaterials(savedJob, dto.getMaterials());
 
         List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
@@ -81,14 +91,20 @@ public class JobServiceImpl implements JobService {
 
     @Override
     @Transactional
-    public JobResponseDto updateJob(Long id, JobRequestDto dto) {
+    public JobResponseDto updateJob(Long id, JobRequestDto dto, MultipartFile file) {
         Jobs existingJob = findJobById(id);
         Users employee = findUserById(dto.getEmployeeId(), "Empleado");
         Users manager = findUserById(dto.getManagerId(), "Manager");
 
         jobMapper.updateEntityFromDto(dto, existingJob, employee, manager);
-        Jobs savedJob = jobsRepository.save(existingJob);
 
+        // 🔥 SUBIMOS EL NUEVO PLANO A SUPABASE
+        if (file != null && !file.isEmpty()) {
+            String url = supabaseStorageService.uploadFile(file);
+            existingJob.setBlueprintUrl(url); // <-- Asegúrate de que Jobs.java tenga este campo
+        }
+
+        Jobs savedJob = jobsRepository.save(existingJob);
         syncJobMaterials(savedJob, dto.getMaterials());
 
         List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
@@ -110,6 +126,7 @@ public class JobServiceImpl implements JobService {
 
     private List<JobResponseDto> buildJobResponses(List<Jobs> jobs) {
         if (jobs.isEmpty()) return List.of();
+
         List<Long> jobIds = jobs.stream().map(Jobs::getId).toList();
         List<JobMaterial> allJobMaterials = jobMaterialRepository.findAllByJobIds(jobIds);
 
@@ -151,9 +168,9 @@ public class JobServiceImpl implements JobService {
         saveJobMaterials(job, incomingMaterials);
     }
 
-    // 🔥 AQUÍ ESTABA EL ERROR. AHORA SÍ GUARDARÁ QUANTITY Y UNIT.
     private void saveJobMaterials(Jobs job, List<MaterialSelectionDto> materialDtos) {
         if (materialDtos == null || materialDtos.isEmpty()) return;
+
         List<JobMaterial> jobMaterials = materialDtos.stream().map(dto -> {
             Materials material = materialsRepository.findById(dto.getMaterialId())
                     .orElseThrow(() -> new ResourceNotFoundException("Material no encontrado"));
@@ -164,6 +181,7 @@ public class JobServiceImpl implements JobService {
             jm.setUnit(dto.getUnit());
             return jm;
         }).toList();
+
         jobMaterialRepository.saveAll(jobMaterials);
     }
 
@@ -185,6 +203,7 @@ public class JobServiceImpl implements JobService {
                     mDto.setUnit(jm.getUnit());
                     return mDto;
                 }).toList();
+
         return jobMapper.jobsToJobResponseDto(job, materialsResponse, updates);
     }
 

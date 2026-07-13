@@ -51,6 +51,9 @@ public class JobMapper {
 
         dto.setPriority(jobs.getPriority());
 
+        // 🔥 ¡LA LÍNEA MÁGICA QUE FALTABA! 🔥
+        dto.setBlueprintUrl(jobs.getBlueprintUrl());
+
         dto.setEmployeeId(jobs.getEmployee().getId());
         dto.setManagerId(jobs.getManager().getId());
         dto.setNameEmployee(jobs.getEmployee().getFirstName() + " " + jobs.getEmployee().getLastName());

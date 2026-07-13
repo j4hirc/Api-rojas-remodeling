@@ -55,5 +55,6 @@ public class Jobs {
     @JoinColumn(name = "manager_id", nullable = false)
     private Users manager;
 
+    @Column(name = "blueprint_url")
     private String blueprintUrl;
 }

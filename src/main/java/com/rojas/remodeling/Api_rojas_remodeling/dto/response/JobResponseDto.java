@@ -46,6 +46,5 @@ public class JobResponseDto {
 
     private Integer priority;
 
-
     private String blueprintUrl;
 }

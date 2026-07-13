@@ -72,7 +72,8 @@
                     .orElseThrow(() -> new RuntimeException("Category not found"));
 
             existingMaterials.setName(materialsRequestDto.getName());
-            existingMaterials.setCount(materialsRequestDto.getCount()); // <-- Agregar esta línea
+            existingMaterials.setCount(materialsRequestDto.getCount());
+            existingMaterials.setUnit(materialsRequestDto.getUnit());// <-- Agregar esta línea
             existingMaterials.setPrice(materialsRequestDto.getPrice()); // <-- Agregar esta línea
             existingMaterials.setCategory(categories);
 

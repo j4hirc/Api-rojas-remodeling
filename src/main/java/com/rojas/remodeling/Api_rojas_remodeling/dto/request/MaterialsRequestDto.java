@@ -17,6 +17,8 @@ public class MaterialsRequestDto {
     @NotNull(message = "El precio no puede ser nulo")
     private Double price;
 
+    private String unit;
+
 
     @NotNull(message = "El ID de la categoría es obligatorio")
     private Long categoryId;

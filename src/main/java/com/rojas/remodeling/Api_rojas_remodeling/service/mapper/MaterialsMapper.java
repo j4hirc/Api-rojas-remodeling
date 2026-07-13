@@ -13,6 +13,7 @@ public class MaterialsMapper {
         materials.setName(materialsRequestDto.getName());
         materials.setCount(materialsRequestDto.getCount());
         materials.setPrice(materialsRequestDto.getPrice());
+        materials.setUnit(materialsRequestDto.getUnit());
         return materials;
     }
 
@@ -23,7 +24,7 @@ public class MaterialsMapper {
         materialsResponseDto.setName(materials.getName());
 
         materialsResponseDto.setCount(materials.getCount());
-
+        materialsResponseDto.setUnit(materials.getUnit());
         materialsResponseDto.setPrice(materials.getPrice());
         materialsResponseDto.setCategoryName(materials.getCategory().getName());
 

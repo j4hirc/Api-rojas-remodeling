@@ -24,6 +24,8 @@ public class Materials {
     @Column(nullable = false)
     private Double price;
 
+    private String unit;
+
     @ManyToOne
     @JoinColumn(name = "categories_id")
     private Categories category;

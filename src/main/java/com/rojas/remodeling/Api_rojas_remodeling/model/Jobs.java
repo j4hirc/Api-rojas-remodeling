@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate; // <-- IMPORTANTE IMPORTAR ESTO
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -57,4 +58,8 @@ public class Jobs {
 
     @Column(name = "blueprint_url")
     private String blueprintUrl;
+
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<JobBlueprint> blueprints;
+
 }

@@ -34,7 +34,10 @@ public class JobMapper {
         return entity;
     }
 
-    public JobResponseDto jobsToJobResponseDto(Jobs jobs, List<MaterialsResponseDto> materials, List<JobUpdateResponseDto> jobUpdate){
+    public JobResponseDto jobsToJobResponseDto(Jobs jobs,
+                                               List<MaterialsResponseDto> materials,
+                                               List<JobUpdateResponseDto> jobUpdate,
+                                               List<String> blueprintUrls){
         JobResponseDto dto = new JobResponseDto();
         dto.setJobId(jobs.getId());
         dto.setClientName(jobs.getClientName());
@@ -46,13 +49,10 @@ public class JobMapper {
         dto.setSafeDepositBoxCodes(jobs.getSafeDepositBoxCodes());
         dto.setStatus(jobs.getStatus());
         dto.setPay(jobs.getPay());
-
         dto.setJobDate(jobs.getJobDate());
-
         dto.setPriority(jobs.getPriority());
 
-        // 🔥 ¡LA LÍNEA MÁGICA QUE FALTABA! 🔥
-        dto.setBlueprintUrl(jobs.getBlueprintUrl());
+        dto.setBlueprintUrls(blueprintUrls);
 
         dto.setEmployeeId(jobs.getEmployee().getId());
         dto.setManagerId(jobs.getManager().getId());

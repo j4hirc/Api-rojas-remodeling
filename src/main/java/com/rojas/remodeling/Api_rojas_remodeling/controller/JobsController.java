@@ -45,23 +45,23 @@ public class JobsController {
     }
 
     // 🔥 MODIFICADO PARA RECIBIR EL PLANO
-    @PostMapping(value = "/create-job", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/create-job", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
     public ResponseEntity<JobResponseDto> createJob(
             @RequestPart("data") @Valid JobRequestDto jobRequestDto,
-            @RequestPart(value = "file", required = false) MultipartFile file){
-        JobResponseDto jobResponseDto = service.createJob(jobRequestDto, file);
+            @RequestPart(value = "files", required = false) List<MultipartFile> files){ // 🔥 AHORA ES UNA LISTA
+        JobResponseDto jobResponseDto = service.createJob(jobRequestDto, files);
         return new ResponseEntity<>(jobResponseDto, HttpStatus.CREATED);
     }
 
     // 🔥 MODIFICADO PARA RECIBIR EL PLANO
-    @PutMapping(value = "/update-job/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/update-job/{id}", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
     public ResponseEntity<JobResponseDto> updateJob(
             @PathVariable Long id,
             @RequestPart("data") @Valid JobRequestDto jobRequestDto,
-            @RequestPart(value = "file", required = false) MultipartFile file){
-        return ResponseEntity.ok(service.updateJob(id, jobRequestDto, file));
+            @RequestPart(value = "files", required = false) List<MultipartFile> files){ // 🔥 AHORA ES UNA LISTA
+        return ResponseEntity.ok(service.updateJob(id, jobRequestDto, files));
     }
 
     @DeleteMapping("/delete-job/{id}")

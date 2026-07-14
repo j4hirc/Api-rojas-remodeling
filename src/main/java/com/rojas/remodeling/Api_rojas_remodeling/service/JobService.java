@@ -15,9 +15,9 @@ public interface JobService {
 
     List<JobResponseDto> findByEmployeeId(Long employeeId);
 
-    JobResponseDto createJob(JobRequestDto jobRequestDto, MultipartFile file);
+    JobResponseDto createJob(JobRequestDto jobRequestDto, List<MultipartFile> files);
 
-    JobResponseDto updateJob(Long id, JobRequestDto jobRequestDto, MultipartFile file);
+    JobResponseDto updateJob(Long id, JobRequestDto jobRequestDto, List<MultipartFile> files);
 
     void deleteJob(Long id);
 }

@@ -35,9 +35,9 @@ public class JobServiceImpl implements JobService {
     private final JobMapper jobMapper;
     private final JobUpdateMapper jobUpdateMapper;
     private final MaterialsMapper materialsMapper;
+    private final JobBlueprintRepository jobBlueprintRepository;
     private final EvidencesMapper evidencesMapper;
 
-    // 🔥 AGREGAMOS EL SERVICIO DE SUPABASE
     private final SupabaseStorageService supabaseStorageService;
 
     @Override
@@ -46,7 +46,9 @@ public class JobServiceImpl implements JobService {
         Jobs job = findJobById(id);
         List<JobMaterial> jobMaterials = jobMaterialRepository.findByJobId(job.getId());
         List<JobUpdateResponseDto> updates = getJobUpdatesResponse(job.getId());
-        return buildSingleJobResponse(job, jobMaterials, updates);
+
+        List<String> urls = jobBlueprintRepository.findByJobId(job.getId()).stream().map(JobBlueprint::getUrl).toList();
+        return buildSingleJobResponse(job, jobMaterials, updates, urls);
     }
 
     @Override
@@ -71,45 +73,67 @@ public class JobServiceImpl implements JobService {
 
     @Override
     @Transactional
-    public JobResponseDto createJob(JobRequestDto dto, MultipartFile file) {
+    public JobResponseDto createJob(JobRequestDto dto, List<MultipartFile> files) {
         Users employee = findUserById(dto.getEmployeeId(), "Empleado");
         Users manager = findUserById(dto.getManagerId(), "Manager");
         Jobs job = jobMapper.JobRequestDtoToJobs(dto, employee, manager);
 
-        // 🔥 SUBIMOS EL PLANO A SUPABASE
-        if (file != null && !file.isEmpty()) {
-            String url = supabaseStorageService.uploadFile(file);
-            job.setBlueprintUrl(url); // <-- Asegúrate de que Jobs.java tenga este campo
+        Jobs savedJob = jobsRepository.save(job);
+
+        if (files != null && !files.isEmpty()) {
+            List<JobBlueprint> blueprints = files.stream()
+                    .filter(file -> !file.isEmpty())
+                    .map(file -> {
+                        String url = supabaseStorageService.uploadFile(file);
+                        JobBlueprint bp = new JobBlueprint();
+                        bp.setJob(savedJob);
+                        bp.setUrl(url);
+                        return bp;
+                    }).toList();
+            jobBlueprintRepository.saveAll(blueprints);
         }
 
-        Jobs savedJob = jobsRepository.save(job);
         saveJobMaterials(savedJob, dto.getMaterials());
 
         List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
-        return buildSingleJobResponse(savedJob, finalMaterials, List.of());
+        List<String> urls = jobBlueprintRepository.findByJobId(savedJob.getId()).stream().map(JobBlueprint::getUrl).toList();
+
+        // 🔥 CORREGIDO: Pasamos los datos correctamente usando el método de apoyo
+        return buildSingleJobResponse(savedJob, finalMaterials, List.of(), urls);
     }
 
     @Override
     @Transactional
-    public JobResponseDto updateJob(Long id, JobRequestDto dto, MultipartFile file) {
+    public JobResponseDto updateJob(Long id, JobRequestDto dto, List<MultipartFile> files) {
         Jobs existingJob = findJobById(id);
         Users employee = findUserById(dto.getEmployeeId(), "Empleado");
         Users manager = findUserById(dto.getManagerId(), "Manager");
 
         jobMapper.updateEntityFromDto(dto, existingJob, employee, manager);
+        Jobs savedJob = jobsRepository.save(existingJob);
 
-        // 🔥 SUBIMOS EL NUEVO PLANO A SUPABASE
-        if (file != null && !file.isEmpty()) {
-            String url = supabaseStorageService.uploadFile(file);
-            existingJob.setBlueprintUrl(url); // <-- Asegúrate de que Jobs.java tenga este campo
+        if (files != null && !files.isEmpty()) {
+            List<JobBlueprint> newBlueprints = files.stream()
+                    .filter(file -> !file.isEmpty())
+                    .map(file -> {
+                        String url = supabaseStorageService.uploadFile(file);
+                        JobBlueprint bp = new JobBlueprint();
+                        bp.setJob(savedJob);
+                        bp.setUrl(url);
+                        return bp;
+                    }).toList();
+            jobBlueprintRepository.saveAll(newBlueprints);
         }
 
-        Jobs savedJob = jobsRepository.save(existingJob);
         syncJobMaterials(savedJob, dto.getMaterials());
 
         List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
         List<JobUpdateResponseDto> updates = getJobUpdatesResponse(savedJob.getId());
-        return buildSingleJobResponse(savedJob, finalMaterials, updates);
+
+        List<String> urls = jobBlueprintRepository.findByJobId(savedJob.getId())
+                .stream().map(JobBlueprint::getUrl).toList();
+
+        return buildSingleJobResponse(savedJob, finalMaterials, updates, urls);
     }
 
     @Override
@@ -121,6 +145,7 @@ public class JobServiceImpl implements JobService {
         if (!updateIds.isEmpty()) { evidencesRepository.deleteAllByJobUpdateIds(updateIds); }
         jobUpdateRepository.deleteByJobId(job.getId());
         jobMaterialRepository.deleteByJobId(job.getId());
+        jobBlueprintRepository.deleteByJobId(job.getId()); // 🔥 Borramos los planos también
         jobsRepository.delete(job);
     }
 
@@ -157,7 +182,13 @@ public class JobServiceImpl implements JobService {
         return jobs.stream().map(job -> {
             List<MaterialsResponseDto> materials = materialsByJobId.getOrDefault(job.getId(), List.of());
             List<JobUpdateResponseDto> updates = updatesByJobId.getOrDefault(job.getId(), List.of());
-            return jobMapper.jobsToJobResponseDto(job, materials, updates);
+
+            // 🔥 CORREGIDO: Leemos los URLs directamente de la entidad Jobs y se los pasamos al Mapper
+            List<String> urls = job.getBlueprints() != null ?
+                    job.getBlueprints().stream().map(JobBlueprint::getUrl).toList() :
+                    List.of();
+
+            return jobMapper.jobsToJobResponseDto(job, materials, updates, urls);
         }).toList();
     }
 
@@ -195,7 +226,7 @@ public class JobServiceImpl implements JobService {
         }).toList();
     }
 
-    private JobResponseDto buildSingleJobResponse(Jobs job, List<JobMaterial> jobMaterials, List<JobUpdateResponseDto> updates) {
+    private JobResponseDto buildSingleJobResponse(Jobs job, List<JobMaterial> jobMaterials, List<JobUpdateResponseDto> updates, List<String> blueprintUrls) {
         List<MaterialsResponseDto> materialsResponse = jobMaterials.stream()
                 .map(jm -> {
                     MaterialsResponseDto mDto = materialsMapper.toResponseDto(jm.getMaterial());
@@ -204,7 +235,7 @@ public class JobServiceImpl implements JobService {
                     return mDto;
                 }).toList();
 
-        return jobMapper.jobsToJobResponseDto(job, materialsResponse, updates);
+        return jobMapper.jobsToJobResponseDto(job, materialsResponse, updates, blueprintUrls);
     }
 
     private Jobs findJobById(Long jobId) {

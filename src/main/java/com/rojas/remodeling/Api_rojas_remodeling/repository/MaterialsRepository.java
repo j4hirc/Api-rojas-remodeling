@@ -25,6 +25,7 @@ public interface MaterialsRepository extends JpaRepository<Materials, Long> {
     @Override
     @NonNull
     @EntityGraph(attributePaths = {"category"})
+    @Query("SELECT m FROM Materials m ORDER BY m.name ASC")
     List<Materials> findAll();
 
     @Override

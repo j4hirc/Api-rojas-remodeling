@@ -10,6 +10,7 @@ import com.rojas.remodeling.Api_rojas_remodeling.exception.ResourceNotFoundExcep
 import com.rojas.remodeling.Api_rojas_remodeling.model.*;
 import com.rojas.remodeling.Api_rojas_remodeling.repository.*;
 import com.rojas.remodeling.Api_rojas_remodeling.service.JobService;
+import com.rojas.remodeling.Api_rojas_remodeling.service.UserService;
 import com.rojas.remodeling.Api_rojas_remodeling.service.mapper.EvidencesMapper;
 import com.rojas.remodeling.Api_rojas_remodeling.service.mapper.JobMapper;
 import com.rojas.remodeling.Api_rojas_remodeling.service.mapper.JobUpdateMapper;
@@ -39,6 +40,8 @@ public class JobServiceImpl implements JobService {
     private final EvidencesMapper evidencesMapper;
 
     private final SupabaseStorageService supabaseStorageService;
+
+    private final EmailService emailService;
 
     @Override
     @Transactional(readOnly = true)
@@ -95,6 +98,21 @@ public class JobServiceImpl implements JobService {
 
         saveJobMaterials(savedJob, dto.getMaterials());
 
+        if (employee.getEmail() != null && !employee.getEmail().isBlank()) {
+            String subject = "Nuevo trabajo asignado: " + savedJob.getClientName();
+            String message = "Hola " + employee.getFirstName() + ",\n\n"
+                    + "Se te ha asignado un nuevo trabajo.\n\n"
+                    + "📌 Detalles del trabajo:\n"
+                    + "- Cliente: " + savedJob.getClientName() + "\n"
+                    + "- Teléfono: " + savedJob.getClientPhone() + "\n"
+                    + "- Dirección: " + savedJob.getAddress() + "\n"
+                    + "- Fecha del trabajo: " + savedJob.getJobDate() + "\n"
+                    + "- Descripción: " + savedJob.getDescription() + "\n\n"
+                    + "Por favor, ingresa a la aplicación para revisar los detalles.";
+
+            emailService.sendEmail(employee.getEmail(), subject, message);
+        }
+
         List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
         List<String> urls = jobBlueprintRepository.findByJobId(savedJob.getId()).stream().map(JobBlueprint::getUrl).toList();
 
@@ -126,6 +144,20 @@ public class JobServiceImpl implements JobService {
         }
 
         syncJobMaterials(savedJob, dto.getMaterials());
+
+        if (employee.getEmail() != null && !employee.getEmail().isBlank()) {
+            String subject = "Actualización de trabajo: " + savedJob.getClientName();
+            String message = "Hola " + employee.getFirstName() + ",\n\n"
+                    + "Se han actualizado los detalles de un trabajo asignado a ti.\n\n"
+                    + "📌 Información del trabajo:\n"
+                    + "- Cliente: " + savedJob.getClientName() + "\n"
+                    + "- Dirección: " + savedJob.getAddress() + "\n"
+                    + "- Fecha: " + savedJob.getJobDate() + "\n"
+                    + "- Descripción: " + savedJob.getDescription() + "\n\n"
+                    + "Revisa la aplicación para ver todos los cambios.";
+
+            emailService.sendEmail(employee.getEmail(), subject, message);
+        }
 
         List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
         List<JobUpdateResponseDto> updates = getJobUpdatesResponse(savedJob.getId());

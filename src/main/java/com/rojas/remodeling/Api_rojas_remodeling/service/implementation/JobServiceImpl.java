@@ -99,16 +99,23 @@ public class JobServiceImpl implements JobService {
         saveJobMaterials(savedJob, dto.getMaterials());
 
         if (employee.getEmail() != null && !employee.getEmail().isBlank()) {
-            String subject = "Nuevo trabajo asignado: " + savedJob.getClientName();
-            String message = "Hola " + employee.getFirstName() + ",\n\n"
-                    + "Se te ha asignado un nuevo trabajo.\n\n"
-                    + "📌 Detalles del trabajo:\n"
-                    + "- Cliente: " + savedJob.getClientName() + "\n"
-                    + "- Teléfono: " + savedJob.getClientPhone() + "\n"
-                    + "- Dirección: " + savedJob.getAddress() + "\n"
-                    + "- Fecha del trabajo: " + savedJob.getJobDate() + "\n"
-                    + "- Descripción: " + savedJob.getDescription() + "\n\n"
-                    + "Por favor, ingresa a la aplicación para revisar los detalles.";
+            String subject = "Asignación de nuevo trabajo: " + savedJob.getClientName();
+
+            String message = "Estimado/a " + employee.getFirstName() + ",\n\n"
+                    + "Te informamos que se te ha asignado un nuevo trabajo.\n\n"
+                    + "📌 **Detalles del trabajo:**\n"
+                    + "• Cliente: " + savedJob.getClientName() + "\n"
+                    + "• Teléfono: " + savedJob.getClientPhone() + "\n"
+                    + "• Dirección: " + savedJob.getAddress() + "\n"
+                    + "• Fecha: " + savedJob.getJobDate() + "\n"
+                    + "• Descripción: " + savedJob.getDescription() + "\n\n"
+                    + "Por favor, ingresa a la plataforma para revisar los detalles completos y confirmar tu disponibilidad:\n"
+                    + "👉 https://remomn.netlify.app/index.html\n\n"
+                    + "Si por algún motivo no puedes aceptar este trabajo, te pedimos que respondas este correo "
+                    + "lo antes posible indicándolo. De lo contrario, se entenderá que aceptas el encargo.\n\n"
+                    + "Quedamos a tu disposición para cualquier consulta.\n\n"
+                    + "Saludos cordiales,\n"
+                    + "Equipo de Administración";
 
             emailService.sendEmail(employee.getEmail(), subject, message);
         }
@@ -147,14 +154,21 @@ public class JobServiceImpl implements JobService {
 
         if (employee.getEmail() != null && !employee.getEmail().isBlank()) {
             String subject = "Actualización de trabajo: " + savedJob.getClientName();
-            String message = "Hola " + employee.getFirstName() + ",\n\n"
-                    + "Se han actualizado los detalles de un trabajo asignado a ti.\n\n"
-                    + "📌 Información del trabajo:\n"
-                    + "- Cliente: " + savedJob.getClientName() + "\n"
-                    + "- Dirección: " + savedJob.getAddress() + "\n"
-                    + "- Fecha: " + savedJob.getJobDate() + "\n"
-                    + "- Descripción: " + savedJob.getDescription() + "\n\n"
-                    + "Revisa la aplicación para ver todos los cambios.";
+
+            String message = "Estimado/a " + employee.getFirstName() + ",\n\n"
+                    + "Te informamos que se han actualizado los detalles de un trabajo que tienes asignado.\n\n"
+                    + "📌 **Detalles actualizados:**\n"
+                    + "• Cliente: " + savedJob.getClientName() + "\n"
+                    + "• Dirección: " + savedJob.getAddress() + "\n"
+                    + "• Fecha: " + savedJob.getJobDate() + "\n"
+                    + "• Descripción: " + savedJob.getDescription() + "\n\n"
+                    + "Por favor, ingresa a la plataforma para revisar todos los cambios y confirmar tu disponibilidad:\n"
+                    + "👉 https://remomn.netlify.app/index.html\n\n"
+                    + "Si por algún motivo no puedes aceptar o continuar con este trabajo, "
+                    + "te pedimos que respondas este correo lo antes posible indicándolo.\n\n"
+                    + "Quedamos a tu disposición para cualquier duda.\n\n"
+                    + "Saludos cordiales,\n"
+                    + "Equipo de Administración";
 
             emailService.sendEmail(employee.getEmail(), subject, message);
         }

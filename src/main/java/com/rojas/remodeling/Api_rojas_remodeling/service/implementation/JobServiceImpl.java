@@ -20,8 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.List;
@@ -109,7 +107,7 @@ public class JobServiceImpl implements JobService {
                     + "• Cliente: " + savedJob.getClientName() + "\n"
                     + "• Teléfono: " + savedJob.getClientPhone() + "\n"
                     + "• Dirección: " + savedJob.getAddress() + "\n"
-                    + "• Fecha: " + formatJobDate(savedJob.getJobDate()) + "\n"
+                    + "• Fecha: " + savedJob.getJobDate() + "\n"
                     + "• Estado: " + savedJob.getStatus()+ "\n"
                     + "• Descripción: " + savedJob.getDescription() + "\n\n"
                     + "💰 **• Valor a Pagar: " + savedJob.getPay() + "**\n\n"
@@ -164,7 +162,7 @@ public class JobServiceImpl implements JobService {
                     + "📌 **Detalles actualizados:**\n"
                     + "• Cliente: " + savedJob.getClientName() + "\n"
                     + "• Dirección: " + savedJob.getAddress() + "\n"
-                    + "• Fecha: " + formatJobDate(savedJob.getJobDate()) + "\n"
+                    + "• Fecha: " + savedJob.getJobDate() + "\n"
                     + "• Estado: " + savedJob.getStatus()+ "\n"
                     + "• Descripción: " + savedJob.getDescription() + "\n\n"
                     + "💰 **• Valor a Pagar: " + savedJob.getPay() + "**\n\n"
@@ -299,12 +297,5 @@ public class JobServiceImpl implements JobService {
         return usersRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(role + " no encontrado con ID: " + userId));
     }
-
-    private String formatJobDate(LocalDate date) {
-        if (date == null) return "N/A";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-        return date.format(formatter);
-    }
-
 
 }

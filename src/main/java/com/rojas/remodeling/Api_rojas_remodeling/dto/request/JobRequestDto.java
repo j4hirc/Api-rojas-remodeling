@@ -33,7 +33,6 @@ public class JobRequestDto {
     @Positive(message = "El pago debe ser un valor positivo")
     private Double pay;
     @NotNull(message = "La fecha del trabajo es obligatoria")
-    @JsonFormat(pattern = "MM/dd/yyyy")
     private LocalDate jobDate;
     @NotNull(message = "El ID del empleado es obligatorio")
     private Long employeeId;

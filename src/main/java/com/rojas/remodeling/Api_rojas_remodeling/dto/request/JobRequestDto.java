@@ -1,5 +1,6 @@
 package com.rojas.remodeling.Api_rojas_remodeling.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -32,6 +33,7 @@ public class JobRequestDto {
     @Positive(message = "El pago debe ser un valor positivo")
     private Double pay;
     @NotNull(message = "La fecha del trabajo es obligatoria")
+    @JsonFormat(pattern = "MM/dd/yyyy")
     private LocalDate jobDate;
     @NotNull(message = "El ID del empleado es obligatorio")
     private Long employeeId;

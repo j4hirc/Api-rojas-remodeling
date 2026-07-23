@@ -1,5 +1,6 @@
 package com.rojas.remodeling.Api_rojas_remodeling.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import java.time.LocalDate; // <-- IMPORTANTE
 import java.util.List;
@@ -27,6 +28,7 @@ public class JobResponseDto {
 
     private Double pay;
 
+    @JsonFormat(pattern = "MM/dd/yyyy")
     private LocalDate jobDate;
 
     private Long employeeId;

@@ -10,7 +10,6 @@ import com.rojas.remodeling.Api_rojas_remodeling.exception.ResourceNotFoundExcep
 import com.rojas.remodeling.Api_rojas_remodeling.model.*;
 import com.rojas.remodeling.Api_rojas_remodeling.repository.*;
 import com.rojas.remodeling.Api_rojas_remodeling.service.JobService;
-import com.rojas.remodeling.Api_rojas_remodeling.service.UserService;
 import com.rojas.remodeling.Api_rojas_remodeling.service.mapper.EvidencesMapper;
 import com.rojas.remodeling.Api_rojas_remodeling.service.mapper.JobMapper;
 import com.rojas.remodeling.Api_rojas_remodeling.service.mapper.JobUpdateMapper;
@@ -20,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.List;
@@ -40,7 +40,6 @@ public class JobServiceImpl implements JobService {
     private final EvidencesMapper evidencesMapper;
 
     private final SupabaseStorageService supabaseStorageService;
-
     private final EmailService emailService;
 
     @Override
@@ -81,8 +80,10 @@ public class JobServiceImpl implements JobService {
         Users manager = findUserById(dto.getManagerId(), "Manager");
         Jobs job = jobMapper.JobRequestDtoToJobs(dto, employee, manager);
 
+        // Guardar primero para tener el ID
         Jobs savedJob = jobsRepository.save(job);
 
+        // Subir archivos
         if (files != null && !files.isEmpty()) {
             List<JobBlueprint> blueprints = files.stream()
                     .filter(file -> !file.isEmpty())
@@ -96,36 +97,40 @@ public class JobServiceImpl implements JobService {
             jobBlueprintRepository.saveAll(blueprints);
         }
 
+        // Guardar materiales protegiendo de duplicados
         saveJobMaterials(savedJob, dto.getMaterials());
 
+        // Enviar correo pero con PROTECCIÓN para que no bloquee la creación si falla
         if (employee.getEmail() != null && !employee.getEmail().isBlank()) {
-            String subject = "Asignación de nuevo trabajo: " + savedJob.getClientName();
+            try {
+                String subject = "Asignación de nuevo trabajo: " + savedJob.getClientName();
+                String message = "Estimado/a " + employee.getFirstName() + ",\n\n"
+                        + "Te informamos que se te ha asignado un nuevo trabajo.\n\n"
+                        + "📌 **Detalles del trabajo:**\n"
+                        + "• Cliente: " + savedJob.getClientName() + "\n"
+                        + "• Teléfono: " + savedJob.getClientPhone() + "\n"
+                        + "• Dirección: " + savedJob.getAddress() + "\n"
+                        + "• Fecha: " + savedJob.getJobDate() + "\n"
+                        + "• Estado: " + savedJob.getStatus()+ "\n"
+                        + "• Descripción: " + savedJob.getDescription() + "\n\n"
+                        + "💰 **• Valor a Pagar: " + savedJob.getPay() + "**\n\n"
+                        + "Por favor, ingresa a la plataforma para revisar los detalles completos y confirmar tu disponibilidad:\n"
+                        + "👉 https://remomn.netlify.app/index.html\n\n"
+                        + "Si por algún motivo no puedes aceptar este trabajo, te pedimos que respondas este correo "
+                        + "lo antes posible indicándolo. De lo contrario, se entenderá que aceptas el encargo.\n\n"
+                        + "Saludos cordiales,\n"
+                        + "Equipo de Administración";
 
-            String message = "Estimado/a " + employee.getFirstName() + ",\n\n"
-                    + "Te informamos que se te ha asignado un nuevo trabajo.\n\n"
-                    + "📌 **Detalles del trabajo:**\n"
-                    + "• Cliente: " + savedJob.getClientName() + "\n"
-                    + "• Teléfono: " + savedJob.getClientPhone() + "\n"
-                    + "• Dirección: " + savedJob.getAddress() + "\n"
-                    + "• Fecha: " + savedJob.getJobDate() + "\n"
-                    + "• Estado: " + savedJob.getStatus()+ "\n"
-                    + "• Descripción: " + savedJob.getDescription() + "\n\n"
-                    + "💰 **• Valor a Pagar: " + savedJob.getPay() + "**\n\n"
-                    + "Por favor, ingresa a la plataforma para revisar los detalles completos y confirmar tu disponibilidad:\n"
-                    + "👉 https://remomn.netlify.app/index.html\n\n"
-                    + "Si por algún motivo no puedes aceptar este trabajo, te pedimos que respondas este correo "
-                    + "lo antes posible indicándolo. De lo contrario, se entenderá que aceptas el encargo.\n\n"
-                    + "Quedamos a tu disposición para cualquier consulta.\n\n"
-                    + "Saludos cordiales,\n"
-                    + "Equipo de Administración";
-
-            emailService.sendEmail(employee.getEmail(), subject, message);
+                emailService.sendEmail(employee.getEmail(), subject, message);
+            } catch (Exception e) {
+                // Si el correo falla, lo ignoramos y PERMITIMOS que el trabajo se cree de todos modos.
+                System.out.println("No se pudo enviar el correo de creación al empleado: " + employee.getEmail());
+            }
         }
 
         List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
         List<String> urls = jobBlueprintRepository.findByJobId(savedJob.getId()).stream().map(JobBlueprint::getUrl).toList();
 
-        // 🔥 CORREGIDO: Pasamos los datos correctamente usando el método de apoyo
         return buildSingleJobResponse(savedJob, finalMaterials, List.of(), urls);
     }
 
@@ -155,26 +160,27 @@ public class JobServiceImpl implements JobService {
         syncJobMaterials(savedJob, dto.getMaterials());
 
         if (employee.getEmail() != null && !employee.getEmail().isBlank()) {
-            String subject = "Actualización de trabajo: " + savedJob.getClientName();
+            try {
+                String subject = "Actualización de trabajo: " + savedJob.getClientName();
+                String message = "Estimado/a " + employee.getFirstName() + ",\n\n"
+                        + "Te informamos que se han actualizado los detalles de un trabajo que tienes asignado.\n\n"
+                        + "📌 **Detalles actualizados:**\n"
+                        + "• Cliente: " + savedJob.getClientName() + "\n"
+                        + "• Dirección: " + savedJob.getAddress() + "\n"
+                        + "• Fecha: " + savedJob.getJobDate() + "\n"
+                        + "• Estado: " + savedJob.getStatus()+ "\n"
+                        + "• Descripción: " + savedJob.getDescription() + "\n\n"
+                        + "💰 **• Valor a Pagar: " + savedJob.getPay() + "**\n\n"
+                        + "Por favor, ingresa a la plataforma para revisar todos los cambios y confirmar tu disponibilidad:\n"
+                        + "👉 https://remomn.netlify.app/index.html\n\n"
+                        + "Saludos cordiales,\n"
+                        + "Equipo de Administración";
 
-            String message = "Estimado/a " + employee.getFirstName() + ",\n\n"
-                    + "Te informamos que se han actualizado los detalles de un trabajo que tienes asignado.\n\n"
-                    + "📌 **Detalles actualizados:**\n"
-                    + "• Cliente: " + savedJob.getClientName() + "\n"
-                    + "• Dirección: " + savedJob.getAddress() + "\n"
-                    + "• Fecha: " + savedJob.getJobDate() + "\n"
-                    + "• Estado: " + savedJob.getStatus()+ "\n"
-                    + "• Descripción: " + savedJob.getDescription() + "\n\n"
-                    + "💰 **• Valor a Pagar: " + savedJob.getPay() + "**\n\n"
-                    + "Por favor, ingresa a la plataforma para revisar todos los cambios y confirmar tu disponibilidad:\n"
-                    + "👉 https://remomn.netlify.app/index.html\n\n"
-                    + "Si por algún motivo no puedes aceptar o continuar con este trabajo, "
-                    + "te pedimos que respondas este correo lo antes posible indicándolo.\n\n"
-                    + "Quedamos a tu disposición para cualquier duda.\n\n"
-                    + "Saludos cordiales,\n"
-                    + "Equipo de Administración";
-
-            emailService.sendEmail(employee.getEmail(), subject, message);
+                emailService.sendEmail(employee.getEmail(), subject, message);
+            } catch (Exception e) {
+                // Misma protección para actualizaciones
+                System.out.println("No se pudo enviar el correo de actualización al empleado: " + employee.getEmail());
+            }
         }
 
         List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
@@ -195,7 +201,7 @@ public class JobServiceImpl implements JobService {
         if (!updateIds.isEmpty()) { evidencesRepository.deleteAllByJobUpdateIds(updateIds); }
         jobUpdateRepository.deleteByJobId(job.getId());
         jobMaterialRepository.deleteByJobId(job.getId());
-        jobBlueprintRepository.deleteByJobId(job.getId()); // 🔥 Borramos los planos también
+        jobBlueprintRepository.deleteByJobId(job.getId());
         jobsRepository.delete(job);
     }
 
@@ -233,7 +239,6 @@ public class JobServiceImpl implements JobService {
             List<MaterialsResponseDto> materials = materialsByJobId.getOrDefault(job.getId(), List.of());
             List<JobUpdateResponseDto> updates = updatesByJobId.getOrDefault(job.getId(), List.of());
 
-            // 🔥 CORREGIDO: Leemos los URLs directamente de la entidad Jobs y se los pasamos al Mapper
             List<String> urls = job.getBlueprints() != null ?
                     job.getBlueprints().stream().map(JobBlueprint::getUrl).toList() :
                     List.of();
@@ -249,10 +254,22 @@ public class JobServiceImpl implements JobService {
         saveJobMaterials(job, incomingMaterials);
     }
 
+    // 🔥 CORRECCIÓN CRÍTICA: Prevenir el bloqueo si el DTO manda materiales repetidos por accidente
     private void saveJobMaterials(Jobs job, List<MaterialSelectionDto> materialDtos) {
         if (materialDtos == null || materialDtos.isEmpty()) return;
 
-        List<JobMaterial> jobMaterials = materialDtos.stream().map(dto -> {
+        // Agrupamos los materiales repetidos para evitar que la base de datos tire error
+        Map<Long, MaterialSelectionDto> materialesUnicos = new HashMap<>();
+        for (MaterialSelectionDto dto : materialDtos) {
+            if (materialesUnicos.containsKey(dto.getMaterialId())) {
+                MaterialSelectionDto exist = materialesUnicos.get(dto.getMaterialId());
+                exist.setQuantity(exist.getQuantity() + dto.getQuantity());
+            } else {
+                materialesUnicos.put(dto.getMaterialId(), dto);
+            }
+        }
+
+        List<JobMaterial> jobMaterials = materialesUnicos.values().stream().map(dto -> {
             Materials material = materialsRepository.findById(dto.getMaterialId())
                     .orElseThrow(() -> new ResourceNotFoundException("Material no encontrado"));
             JobMaterial jm = new JobMaterial();
@@ -297,5 +314,4 @@ public class JobServiceImpl implements JobService {
         return usersRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(role + " no encontrado con ID: " + userId));
     }
-
 }

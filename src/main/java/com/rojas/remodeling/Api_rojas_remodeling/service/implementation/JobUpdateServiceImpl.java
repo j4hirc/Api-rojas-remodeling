@@ -54,7 +54,6 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         JobUpdates jobUpdate = jobUpdateMapper.toEntity(requestDto, job, employee);
         JobUpdates savedUpdate = jobUpdateRepository.save(jobUpdate);
 
-        // 🔥 ACTUALIZAR MATERIALES DEL TRABAJO CON LO QUE MANDÓ EL EMPLEADO
         if (requestDto.getMaterials() != null && !requestDto.getMaterials().isEmpty()) {
             List<JobMaterial> existingMaterials = jobMaterialRepository.findByJobId(job.getId());
 

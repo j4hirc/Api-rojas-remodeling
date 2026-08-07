@@ -20,7 +20,7 @@ public class EmailService {
             message.setText(content);
 
             mailSender.send(message);
-            System.out.println("¡Correo enviado con éxito vía SMTP de Brevo!");
+            System.out.println("¡Correo enviado con éxito vía SMTP de Brevo!" + " Destinatario: " + toEmail + ", Asunto: " + subject);
         } catch (Exception e) {
             System.err.println("Error al enviar el correo por SMTP: " + e.getMessage());
         }

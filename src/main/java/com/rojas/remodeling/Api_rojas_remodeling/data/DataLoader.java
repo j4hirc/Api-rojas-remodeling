@@ -50,18 +50,18 @@ public class DataLoader implements CommandLineRunner {
                 });
 
 
-        if(usersRepository.findByEmail("admin@admin.com").isEmpty()){
+        if(usersRepository.findByEmail("info@remomn.com").isEmpty()){
             Users admin = new Users();
-            admin.setDni("0998765432");
+            admin.setDni("0000000001");
             admin.setFirstName("Administrador");
             admin.setLastName("Admin");
 
-            admin.setEmail("admin@admin.com");
-            admin.setPassword(passwordEncoder.encode("admin12345"));
+            admin.setEmail("info@remomn.com");
+            admin.setPassword(passwordEncoder.encode("@Bike1993"));
 
             admin.setDateOfBirth(LocalDate.now());
             admin.setDateOfEntry(LocalDate.now());
-            admin.setPhone("0933245642");
+            admin.setPhone("09525640477");
             admin.setStatus("Active");
             admin.setTitle("Administrador de la web");
 

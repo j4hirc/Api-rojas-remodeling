@@ -80,10 +80,8 @@ public class JobServiceImpl implements JobService {
         Users manager = findUserById(dto.getManagerId(), "Manager");
         Jobs job = jobMapper.JobRequestDtoToJobs(dto, employee, manager);
 
-        // Guardar primero para tener el ID
         Jobs savedJob = jobsRepository.save(job);
 
-        // Subir archivos
         if (files != null && !files.isEmpty()) {
             List<JobBlueprint> blueprints = files.stream()
                     .filter(file -> !file.isEmpty())
@@ -97,33 +95,14 @@ public class JobServiceImpl implements JobService {
             jobBlueprintRepository.saveAll(blueprints);
         }
 
-        // Guardar materiales protegiendo de duplicados
         saveJobMaterials(savedJob, dto.getMaterials());
 
-        // 1. Obtenemos los materiales ya guardados para incluirlos en el correo
         List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
 
         if (employee.getEmail() != null && !employee.getEmail().isBlank()) {
             try {
                 String subject = "Asignación de nuevo trabajo: " + savedJob.getClientName();
 
-                // 2. Construimos la lista de materiales en HTML
-                StringBuilder materialesHtml = new StringBuilder();
-                if (!finalMaterials.isEmpty()) {
-                    materialesHtml.append("<br><br><p><b>[MATERIALES PRE-ASIGNADOS]:</b><br>");
-                    for (JobMaterial jm : finalMaterials) {
-                        materialesHtml.append("• ")
-                                .append(jm.getMaterial().getName())
-                                .append(" | ")
-                                .append(jm.getMaterial().getPrice())
-                                .append(" (").append(jm.getUnit()).append(".): ")
-                                .append(jm.getQuantity()).append(" ")
-                                .append(jm.getUnit()).append("<br>");
-                    }
-                    materialesHtml.append("</p>");
-                }
-
-                // 3. Armamos el mensaje completo en HTML
                 String message = "<p>Estimado/a <b>" + employee.getFirstName() + "</b>,</p>"
                         + "<p>Te informamos que se te ha asignado un nuevo trabajo.</p>"
                         + "<p>📌 <b>Detalles del trabajo:</b><br>"
@@ -133,10 +112,6 @@ public class JobServiceImpl implements JobService {
                         + "• Fecha: " + savedJob.getJobDate() + "<br>"
                         + "• Estado: " + savedJob.getStatus() + "<br>"
                         + "• Descripción: " + savedJob.getDescription().replace("\n", "<br>") + "</p>"
-
-                        // Insertamos los materiales aquí
-                        + materialesHtml.toString()
-
                         + "<p>💰 <b>Valor a Pagar: " + savedJob.getPay() + "</b></p>"
                         + "<p>Por favor, ingresa a la plataforma para revisar los detalles completos y confirmar tu disponibilidad:<br>"
                         + "👉 <a href='https://remomn.netlify.app/index.html'>Acceder a la plataforma</a></p>"

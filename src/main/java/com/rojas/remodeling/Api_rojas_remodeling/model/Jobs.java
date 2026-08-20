@@ -23,7 +23,7 @@ public class Jobs {
     @Column(nullable = false)
     private String clientPhone;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false)

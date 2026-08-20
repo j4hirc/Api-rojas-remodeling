@@ -14,13 +14,13 @@ public class EmailService {
     public void sendEmail(String toEmail, String subject, String content) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("info@remomn.com");
+            message.setFrom("Equipo de Administración <info@remomn.com>");
             message.setTo(toEmail);
             message.setSubject(subject);
             message.setText(content);
 
             mailSender.send(message);
-            System.out.println("¡Correo enviado con éxito vía SMTP de Brevo!" + " Destinatario: " + toEmail + ", Asunto: " + subject);
+            System.out.println("¡Correo enviado con éxito vía SMTP de Brevo! Destinatario: " + toEmail);
         } catch (Exception e) {
             System.err.println("Error al enviar el correo por SMTP: " + e.getMessage());
         }

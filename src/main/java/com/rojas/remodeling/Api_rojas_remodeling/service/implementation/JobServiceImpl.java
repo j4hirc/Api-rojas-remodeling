@@ -117,7 +117,7 @@ public class JobServiceImpl implements JobService {
                         + "Por favor, ingresa a la plataforma para revisar los detalles completos y confirmar tu disponibilidad:\n"
                         + "👉 https://remomn.netlify.app/index.html\n\n"
                         + "Si por algún motivo no puedes aceptar este trabajo, te pedimos que respondas a este correo info@remomn.com"
-                        + "lo antes posible indicándolo. De lo contrario, se entenderá que aceptas el encargo.\n\n"
+                        + " lo antes posible indicándolo. De lo contrario, se entenderá que aceptas el encargo.\n\n"
                         + "Saludos cordiales,\n"
                         + "Equipo de Administración";
 

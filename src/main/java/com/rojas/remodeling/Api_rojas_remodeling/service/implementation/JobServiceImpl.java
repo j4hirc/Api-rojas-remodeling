@@ -100,35 +100,57 @@ public class JobServiceImpl implements JobService {
         // Guardar materiales protegiendo de duplicados
         saveJobMaterials(savedJob, dto.getMaterials());
 
-        // Enviar correo pero con PROTECCIÓN para que no bloquee la creación si falla
+        // 1. Obtenemos los materiales ya guardados para incluirlos en el correo
+        List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
+
         if (employee.getEmail() != null && !employee.getEmail().isBlank()) {
             try {
                 String subject = "Asignación de nuevo trabajo: " + savedJob.getClientName();
-                String message = "Estimado/a " + employee.getFirstName() + ",\n\n"
-                        + "Te informamos que se te ha asignado un nuevo trabajo.\n\n"
-                        + "📌 **Detalles del trabajo:**\n"
-                        + "• Cliente: " + savedJob.getClientName() + "\n"
-                        + "• Teléfono: " + savedJob.getClientPhone() + "\n"
-                        + "• Dirección: " + savedJob.getAddress() + "\n"
-                        + "• Fecha: " + savedJob.getJobDate() + "\n"
-                        + "• Estado: " + savedJob.getStatus()+ "\n"
-                        + "• Descripción: " + savedJob.getDescription() + "\n\n"
-                        + "💰 **• Valor a Pagar: " + savedJob.getPay() + "**\n\n"
-                        + "Por favor, ingresa a la plataforma para revisar los detalles completos y confirmar tu disponibilidad:\n"
-                        + "👉 https://remomn.netlify.app/index.html\n\n"
-                        + "Si por algún motivo no puedes aceptar este trabajo, te pedimos que respondas a este correo info@remomn.com"
-                        + " lo antes posible indicándolo. De lo contrario, se entenderá que aceptas el encargo.\n\n"
-                        + "Saludos cordiales,\n"
-                        + "Equipo de Administración";
+
+                // 2. Construimos la lista de materiales en HTML
+                StringBuilder materialesHtml = new StringBuilder();
+                if (!finalMaterials.isEmpty()) {
+                    materialesHtml.append("<br><br><p><b>[MATERIALES PRE-ASIGNADOS]:</b><br>");
+                    for (JobMaterial jm : finalMaterials) {
+                        materialesHtml.append("• ")
+                                .append(jm.getMaterial().getName())
+                                .append(" | ")
+                                .append(jm.getMaterial().getPrice())
+                                .append(" (").append(jm.getUnit()).append(".): ")
+                                .append(jm.getQuantity()).append(" ")
+                                .append(jm.getUnit()).append("<br>");
+                    }
+                    materialesHtml.append("</p>");
+                }
+
+                // 3. Armamos el mensaje completo en HTML
+                String message = "<p>Estimado/a <b>" + employee.getFirstName() + "</b>,</p>"
+                        + "<p>Te informamos que se te ha asignado un nuevo trabajo.</p>"
+                        + "<p>📌 <b>Detalles del trabajo:</b><br>"
+                        + "• Cliente: " + savedJob.getClientName() + "<br>"
+                        + "• Teléfono: " + savedJob.getClientPhone() + "<br>"
+                        + "• Dirección: " + savedJob.getAddress() + "<br>"
+                        + "• Fecha: " + savedJob.getJobDate() + "<br>"
+                        + "• Estado: " + savedJob.getStatus() + "<br>"
+                        + "• Descripción: " + savedJob.getDescription().replace("\n", "<br>") + "</p>"
+
+                        // Insertamos los materiales aquí
+                        + materialesHtml.toString()
+
+                        + "<p>💰 <b>Valor a Pagar: " + savedJob.getPay() + "</b></p>"
+                        + "<p>Por favor, ingresa a la plataforma para revisar los detalles completos y confirmar tu disponibilidad:<br>"
+                        + "👉 <a href='https://remomn.netlify.app/index.html'>Acceder a la plataforma</a></p>"
+                        + "<p>Si por algún motivo no puedes aceptar este trabajo, te pedimos que respondas a este correo "
+                        + "<a href='mailto:info@remomn.com'>info@remomn.com</a> lo antes posible indicándolo. "
+                        + "De lo contrario, se entenderá que aceptas el encargo.</p>"
+                        + "<p>Saludos cordiales,<br>Equipo de Administración</p>";
 
                 emailService.sendEmail(employee.getEmail(), subject, message);
             } catch (Exception e) {
-                // Si el correo falla, lo ignoramos y PERMITIMOS que el trabajo se cree de todos modos.
-                System.out.println("No se pudo enviar el correo de creación al empleado: " + employee.getEmail());
+                System.out.println("No se pudo enviar el correo al empleado: " + employee.getEmail());
             }
         }
 
-        List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
         List<String> urls = jobBlueprintRepository.findByJobId(savedJob.getId()).stream().map(JobBlueprint::getUrl).toList();
 
         return buildSingleJobResponse(savedJob, finalMaterials, List.of(), urls);

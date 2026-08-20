@@ -39,5 +39,7 @@
         @NotBlank(message = "El titulo no puede estar vacío")
         private String title;
 
+        private String color;
+
 
     }

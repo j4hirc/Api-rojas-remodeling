@@ -48,4 +48,6 @@ public class UserRequestDto {
     @NotNull(message = "Debe tener al menos un rol")
     private Set<String> roles;
 
+    @NotBlank(message = "El color no puede estar vacío")
+    private String color;
 }

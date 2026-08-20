@@ -53,6 +53,9 @@ public class Users {
     @Column(nullable = false)
     private String title;
 
+    @Column(nullable = false, unique = true)
+    private String color;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "users_roles",

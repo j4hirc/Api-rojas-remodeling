@@ -21,6 +21,7 @@ public class UserResponseDto {
     private LocalDate dateOfBirth;
     private LocalDate dateOfEntry;
     private String status;
+    private String color;
     // --------------------------------------------------------------
 
     private Set<Roles> roles;

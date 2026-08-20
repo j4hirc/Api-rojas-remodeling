@@ -64,6 +64,7 @@ public class DataLoader implements CommandLineRunner {
             admin.setPhone("09525640477");
             admin.setStatus("Active");
             admin.setTitle("Administrador de la web");
+            admin.setColor("#1F2A44");
 
             Set<Roles> adminRoles = new HashSet<>();
             adminRoles.add(adminRole);

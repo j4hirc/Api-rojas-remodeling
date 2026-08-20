@@ -23,6 +23,7 @@ public class UserMapper {
         users.setDateOfEntry(userRequestDto.getDateOfEntry());
         users.setStatus(userRequestDto.getStatus());
         users.setTitle(userRequestDto.getTitle());
+        users.setColor(userRequestDto.getColor());
 
         return users;
     }
@@ -44,6 +45,7 @@ public class UserMapper {
         userResponseDto.setStatus(users.getStatus());
         userResponseDto.setEmail(users.getEmail());
         userResponseDto.setPhone(users.getPhone());
+        userResponseDto.setColor(users.getColor());
         userResponseDto.setRoles(users.getRoles());
         return userResponseDto;
     }
@@ -59,6 +61,7 @@ public class UserMapper {
         entity.setPhone(dto.getPhone());
         entity.setDateOfBirth(dto.getDateOfBirth());
         entity.setTitle(dto.getTitle());
+        entity.setColor(dto.getColor());
     }
 
     public void updateEntityFromRequest(UserRequestDto dto, Users entity) {
@@ -73,6 +76,7 @@ public class UserMapper {
         entity.setDateOfEntry(dto.getDateOfEntry());
         entity.setStatus(dto.getStatus());
         entity.setTitle(dto.getTitle());
+        entity.setColor(dto.getColor());
     }
 
 

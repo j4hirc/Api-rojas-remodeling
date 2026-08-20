@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
         Users existingUser = usersRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("The user does not exist"));
 
-        validateUniqueFieldsForUpdate(existingUser, userRequestDto.getDni(), userRequestDto.getEmail(), userRequestDto.getPhone());
+        validateUniqueFieldsForUpdate(existingUser, userRequestDto.getDni(), userRequestDto.getEmail(), userRequestDto.getPhone(), userRequestDto.getColor());
 
         userMapper.updateEntityFromRequest(userRequestDto, existingUser);
 
@@ -97,7 +97,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
-        validateUniqueFields(userRequestDto.getDni(), userRequestDto.getEmail(), userRequestDto.getPhone());
+        validateUniqueFields(userRequestDto.getDni(), userRequestDto.getEmail(), userRequestDto.getPhone(), userRequestDto.getColor());
 
         Users user = userMapper.userRequestToEntity(userRequestDto);
         user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
@@ -124,7 +124,7 @@ public class UserServiceImpl implements UserService {
         Users existingUser = usersRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("The user does not exist"));
 
-        validateUniqueFieldsForUpdate(existingUser,editProfileDto.getDni(), editProfileDto.getEmail(), editProfileDto.getPhone());
+        validateUniqueFieldsForUpdate(existingUser, editProfileDto.getDni(), editProfileDto.getEmail(), editProfileDto.getPhone(), editProfileDto.getColor());
 
 
         userMapper.updateEntityFromEditProfile(editProfileDto, existingUser);
@@ -170,7 +170,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    private void validateUniqueFields(String dni, String email, String phone){
+    private void validateUniqueFields(String dni, String email, String phone, String color){
         if(usersRepository.existsByDni(dni)){
             throw new IllegalArgumentException("El DNI ingresado ya se encuentra registrado.");
         }
@@ -180,9 +180,12 @@ public class UserServiceImpl implements UserService {
         if(usersRepository.existsByPhone(phone)){
             throw new IllegalArgumentException("El número de teléfono ya se encuentra registrado.");
         }
+        if(usersRepository.existsByColor(color)){
+            throw new IllegalArgumentException("El color ingresado ya está en uso por otro usuario.");
+        }
     }
 
-    private void validateUniqueFieldsForUpdate(Users existingUser, String newDni, String newEmail, String newPhone) {
+    private void validateUniqueFieldsForUpdate(Users existingUser, String newDni, String newEmail, String newPhone, String newColor) {
         if (newDni != null && usersRepository.existsByDni(newDni) && !existingUser.getDni().equals(newDni)) {
             throw new IllegalArgumentException("El DNI ingresado ya pertenece a otro usuario.");
         }
@@ -191,6 +194,9 @@ public class UserServiceImpl implements UserService {
         }
         if (newPhone != null && usersRepository.existsByPhone(newPhone) && !existingUser.getPhone().equals(newPhone)) {
             throw new IllegalArgumentException("El Teléfono ingresado ya pertenece a otro usuario.");
+        }
+        if (newColor != null && !newColor.isBlank() && usersRepository.existsByColor(newColor) && !existingUser.getColor().equalsIgnoreCase(newColor)) {
+            throw new IllegalArgumentException("El color ingresado ya pertenece a otro usuario.");
         }
     }
 

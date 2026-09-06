@@ -1,5 +1,6 @@
 package com.rojas.remodeling.Api_rojas_remodeling.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -56,6 +57,7 @@ public class Users {
     @Column(nullable = false, unique = true)
     private String color;
 
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "users_roles",

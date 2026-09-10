@@ -54,5 +54,25 @@ public class SupabaseStorageService {
             throw new RuntimeException("Error procesando el archivo: " + e.getMessage());
         }
     }
+    
+    public void deleteFile(String fileUrl) {
+        if (fileUrl == null || fileUrl.isBlank()) return;
+
+        try {
+            // Transformamos la URL pública a la ruta interna de la API
+            String deleteUrl = fileUrl.replace("/public/", "/");
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + supabaseKey);
+
+            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+            RestTemplate restTemplate = new RestTemplate();
+
+            restTemplate.exchange(deleteUrl, HttpMethod.DELETE, requestEntity, String.class);
+
+        } catch (Exception e) {
+            System.err.println("No se pudo eliminar el archivo en Supabase: " + fileUrl + " - " + e.getMessage());
+        }
+    }
 
 }

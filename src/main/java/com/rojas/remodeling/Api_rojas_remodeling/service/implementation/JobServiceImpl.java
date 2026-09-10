@@ -193,12 +193,31 @@ public class JobServiceImpl implements JobService {
     @Transactional
     public void deleteJob(Long id) {
         Jobs job = findJobById(id);
+        
+        List<JobBlueprint> blueprints = jobBlueprintRepository.findByJobId(job.getId());
+        for (JobBlueprint bp : blueprints) {
+            supabaseStorageService.deleteFile(bp.getUrl());
+        }
+
         List<JobUpdates> updates = jobUpdateRepository.findByJobId(job.getId());
         List<Long> updateIds = updates.stream().map(JobUpdates::getId).toList();
-        if (!updateIds.isEmpty()) { evidencesRepository.deleteAllByJobUpdateIds(updateIds); }
+
+        if (!updateIds.isEmpty()) {
+            for (JobUpdates update : updates) {
+                List<Evidences> evidencias = evidencesRepository.findAllJobUpdateId(update.getId());
+                for (Evidences ev : evidencias) {
+                    supabaseStorageService.deleteFile(ev.getImageUri());
+                }
+            }
+
+            evidencesRepository.deleteAllByJobUpdateIds(updateIds);
+        }
+
         jobUpdateRepository.deleteByJobId(job.getId());
-        jobMaterialRepository.deleteByJobId(job.getId());
         jobBlueprintRepository.deleteByJobId(job.getId());
+
+        jobMaterialRepository.deleteByJobId(job.getId());
+
         jobsRepository.delete(job);
     }
 

@@ -4,6 +4,7 @@ import com.rojas.remodeling.Api_rojas_remodeling.model.Jobs;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -31,5 +32,9 @@ public interface JobsRepository extends JpaRepository<Jobs, Long> {
     @EntityGraph(attributePaths = {"employee", "manager"})
     @Query("SELECT j FROM Jobs j WHERE j.employee.firstName = :nameEmployee ORDER BY j.priority ASC")
     List<Jobs> findByEmployeeFirstName(@Param("nameEmployee")String nameEmployee);
+    
+    @Modifying
+    @Query("DELETE FROM Jobs j WHERE j.id = :jobId")
+    void deleteJobByIdCustom(@Param("jobId") Long jobId);
 
 }

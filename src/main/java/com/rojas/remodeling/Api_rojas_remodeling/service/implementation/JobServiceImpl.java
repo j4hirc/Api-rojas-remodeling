@@ -193,12 +193,14 @@ public class JobServiceImpl implements JobService {
     @Transactional
     public void deleteJob(Long id) {
         Jobs job = findJobById(id);
-        
+
+        // 1. ELIMINAR PLANOS FÍSICOS DE SUPABASE
         List<JobBlueprint> blueprints = jobBlueprintRepository.findByJobId(job.getId());
         for (JobBlueprint bp : blueprints) {
             supabaseStorageService.deleteFile(bp.getUrl());
         }
 
+        // 2. ELIMINAR EVIDENCIAS FÍSICAS DE SUPABASE Y DB
         List<JobUpdates> updates = jobUpdateRepository.findByJobId(job.getId());
         List<Long> updateIds = updates.stream().map(JobUpdates::getId).toList();
 
@@ -209,16 +211,16 @@ public class JobServiceImpl implements JobService {
                     supabaseStorageService.deleteFile(ev.getImageUri());
                 }
             }
-
             evidencesRepository.deleteAllByJobUpdateIds(updateIds);
         }
 
+        // 3. LIMPIAR LAS TABLAS INTERMEDIAS CON QUERIES DIRECTAS (Bypass de caché)
         jobUpdateRepository.deleteByJobId(job.getId());
-        jobBlueprintRepository.deleteByJobId(job.getId());
-
         jobMaterialRepository.deleteByJobId(job.getId());
+        jobBlueprintRepository.deleteByJobId(job.getId()); // 🔥 Lo hacemos manual para evitar choques
 
-        jobsRepository.delete(job);
+        // 4. ELIMINAR EL TRABAJO MAESTRO A LA FUERZA
+        jobsRepository.deleteJobByIdCustom(job.getId());
     }
 
     private List<JobResponseDto> buildJobResponses(List<Jobs> jobs) {

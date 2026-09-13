@@ -22,6 +22,7 @@ public class JobMapper {
         entity.setLatitude(jobRequestDto.getLatitude());
         entity.setLongitude(jobRequestDto.getLongitude());
         entity.setSafeDepositBoxCodes(jobRequestDto.getSafeDepositBoxCodes());
+        entity.setQuickbooksInvoice(jobRequestDto.getQuickbooksInvoice());
         entity.setStatus(jobRequestDto.getStatus());
         entity.setPay(jobRequestDto.getPay());
 
@@ -47,6 +48,7 @@ public class JobMapper {
         dto.setLatitude(jobs.getLatitude());
         dto.setLongitude(jobs.getLongitude());
         dto.setSafeDepositBoxCodes(jobs.getSafeDepositBoxCodes());
+        dto.setQuickbooksInvoice(jobs.getQuickbooksInvoice());
         dto.setStatus(jobs.getStatus());
         dto.setPay(jobs.getPay());
         dto.setJobDate(jobs.getJobDate());
@@ -72,6 +74,7 @@ public class JobMapper {
         entity.setLatitude(dto.getLatitude());
         entity.setLongitude(dto.getLongitude());
         entity.setSafeDepositBoxCodes(dto.getSafeDepositBoxCodes());
+        entity.setQuickbooksInvoice(dto.getQuickbooksInvoice());
         entity.setStatus(dto.getStatus());
         entity.setPay(dto.getPay());
 

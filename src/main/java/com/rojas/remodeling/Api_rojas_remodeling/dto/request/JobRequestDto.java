@@ -27,6 +27,7 @@ public class JobRequestDto {
     private Double longitude;
 
     private String safeDepositBoxCodes;
+    private String quickbooksInvoice;
 
     @NotBlank(message = "El estado no puede estar vacío")
     private String status;

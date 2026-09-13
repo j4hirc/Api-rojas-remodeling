@@ -64,6 +64,16 @@ public class JobsController {
         return ResponseEntity.ok(service.updateJob(id, jobRequestDto, files));
     }
 
+    @PatchMapping("/{id}/invoice")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    public ResponseEntity<JobResponseDto> updateInvoice(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, String> body) {
+
+        String invoice = body.get("quickbooksInvoice");
+        return ResponseEntity.ok(service.updateQuickbooksInvoice(id, invoice));
+    }
+
     @DeleteMapping("/delete-job/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
     public ResponseEntity<String> deleteJob(@PathVariable Long id){

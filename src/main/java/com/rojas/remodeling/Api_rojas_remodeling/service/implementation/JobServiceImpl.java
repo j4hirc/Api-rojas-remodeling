@@ -191,6 +191,27 @@ public class JobServiceImpl implements JobService {
 
     @Override
     @Transactional
+    public JobResponseDto updateQuickbooksInvoice(Long id, String quickbooksInvoice) {
+        Jobs job = findJobById(id);
+
+        // Solo permitir cuando el trabajo ya está cerrado
+        if (!"COMPLETED".equalsIgnoreCase(job.getStatus()) && !"CANCELLED".equalsIgnoreCase(job.getStatus())) {
+            throw new RuntimeException("Solo se puede agregar la factura de QuickBooks cuando el trabajo está COMPLETED o CANCELLED");
+        }
+
+        job.setQuickbooksInvoice(quickbooksInvoice);
+        Jobs saved = jobsRepository.save(job);
+
+        List<JobMaterial> materials = jobMaterialRepository.findByJobId(saved.getId());
+        List<JobUpdateResponseDto> updates = getJobUpdatesResponse(saved.getId());
+        List<String> urls = jobBlueprintRepository.findByJobId(saved.getId())
+                .stream().map(JobBlueprint::getUrl).toList();
+
+        return buildSingleJobResponse(saved, materials, updates, urls);
+    }
+
+    @Override
+    @Transactional
     public void deleteJob(Long id) {
         Jobs job = findJobById(id);
 

@@ -24,6 +24,8 @@ public class JobResponseDto {
 
     private String safeDepositBoxCodes;
 
+    private String quickbooksInvoice;
+
     private String status;
 
     private Double pay;

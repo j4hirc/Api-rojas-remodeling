@@ -19,5 +19,7 @@ public interface JobService {
 
     JobResponseDto updateJob(Long id, JobRequestDto jobRequestDto, List<MultipartFile> files);
 
+    JobResponseDto updateQuickbooksInvoice(Long id, String quickbooksInvoice);
+
     void deleteJob(Long id);
 }

@@ -37,6 +37,9 @@ public class Jobs {
 
     private String safeDepositBoxCodes;
 
+    @Column(name = "quickbooks_invoice")
+    private String quickbooksInvoice;
+
     @Column(nullable = false)
     private String status;
 

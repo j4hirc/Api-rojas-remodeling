@@ -74,7 +74,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
                 "https://remomn.netlify.app",
                 "https://remomn-official.netlify.app",
-                "http://localhost:4200",
+                "http://localhost:4200/",
                 "http://127.0.0.1:5500",
                 "https://remomnv2.netlify.app"
         ));

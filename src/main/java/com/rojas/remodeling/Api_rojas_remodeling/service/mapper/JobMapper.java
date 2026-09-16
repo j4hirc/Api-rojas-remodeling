@@ -19,6 +19,10 @@ public class JobMapper {
         entity.setClientPhone(jobRequestDto.getClientPhone());
         entity.setDescription(jobRequestDto.getDescription());
         entity.setAddress(jobRequestDto.getAddress());
+
+        entity.setBuildingNumber(jobRequestDto.getBuildingNumber());
+        entity.setApartment(jobRequestDto.getApartment());
+
         entity.setLatitude(jobRequestDto.getLatitude());
         entity.setLongitude(jobRequestDto.getLongitude());
         entity.setSafeDepositBoxCodes(jobRequestDto.getSafeDepositBoxCodes());
@@ -45,6 +49,10 @@ public class JobMapper {
         dto.setClientPhone(jobs.getClientPhone());
         dto.setDescription(jobs.getDescription());
         dto.setAddress(jobs.getAddress());
+
+        dto.setBuildingNumber(jobs.getBuildingNumber());
+        dto.setApartment(jobs.getApartment());
+
         dto.setLatitude(jobs.getLatitude());
         dto.setLongitude(jobs.getLongitude());
         dto.setSafeDepositBoxCodes(jobs.getSafeDepositBoxCodes());
@@ -71,6 +79,10 @@ public class JobMapper {
         entity.setClientPhone(dto.getClientPhone());
         entity.setDescription(dto.getDescription());
         entity.setAddress(dto.getAddress());
+
+        entity.setBuildingNumber(dto.getBuildingNumber());
+        entity.setApartment(dto.getApartment());
+
         entity.setLatitude(dto.getLatitude());
         entity.setLongitude(dto.getLongitude());
         entity.setSafeDepositBoxCodes(dto.getSafeDepositBoxCodes());

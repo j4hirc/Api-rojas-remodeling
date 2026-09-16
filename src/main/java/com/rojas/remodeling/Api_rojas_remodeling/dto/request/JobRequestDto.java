@@ -21,6 +21,13 @@ public class JobRequestDto {
     private String description;
     @NotBlank(message = "La dirección no puede estar vacía")
     private String address;
+
+
+    //los nuevos campos para el número de edificio y apartamento
+    private String buildingNumber;
+    private String apartment;
+
+
     @NotNull(message = "La latitud es obligatoria para la ubicación")
     private Double latitude;
     @NotNull(message = "La longitud es obligatoria para la ubicación")

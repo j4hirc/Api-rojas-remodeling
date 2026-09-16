@@ -29,6 +29,14 @@ public class Jobs {
     @Column(nullable = false)
     private String address;
 
+    //numero del edificio
+    @Column(name = "building_number")
+    private String buildingNumber;
+
+    //apartamento
+    @Column(name = "apartment")
+    private String apartment;
+
     @Column(nullable = false)
     private Double latitude;
 

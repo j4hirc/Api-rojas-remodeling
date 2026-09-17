@@ -108,7 +108,9 @@ public class JobServiceImpl implements JobService {
                         + "<p>📌 <b>Detalles del trabajo:</b><br>"
                         + "• Cliente: " + savedJob.getClientName() + "<br>"
                         + "• Teléfono: " + savedJob.getClientPhone() + "<br>"
-                        + "• Dirección: " + savedJob.getAddress() + "<br>"
+                        + "• Dirección: " + savedJob.getAddress()
+                        + (savedJob.getBuildingNumber() != null ? " - Edificio: " + savedJob.getBuildingNumber() : "")
+                        + (savedJob.getApartment() != null ? " - Apto: " + savedJob.getApartment() : "") + "<br>"
                         + "• Fecha: " + savedJob.getJobDate() + "<br>"
                         + "• Estado: " + savedJob.getStatus() + "<br>"
                         + "• Descripción: " + savedJob.getDescription().replace("\n", "<br>") + "</p>"

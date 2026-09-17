@@ -18,6 +18,9 @@ public class JobResponseDto {
 
     private String address;
 
+    private String buildingNumber;
+    private String apartment;
+
     private Double latitude;
 
     private Double longitude;

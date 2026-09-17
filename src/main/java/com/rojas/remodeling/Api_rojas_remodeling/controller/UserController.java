@@ -29,14 +29,14 @@ public class UserController {
 
 
     @GetMapping("/all-users")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE', 'BODEGUERO')")
     public ResponseEntity<List<UserResponseDto>> findAll(){
         return ResponseEntity.ok(userService.findAll());
     }
 
 
     @GetMapping("/all-unemployed")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
     public ResponseEntity<List<UserResponseDto>> findUnemployed(){
         return ResponseEntity.ok(userService.findUnemployed());
     }
@@ -63,7 +63,7 @@ public class UserController {
     }
 
     @GetMapping("/name-rol-user/{roleName}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
     public ResponseEntity<List<UserResponseDto>> findByRoleName(@PathVariable String roleName){
         return ResponseEntity.ok(userService.findByRoleName(roleName));
     }
@@ -87,7 +87,7 @@ public class UserController {
 
 
     @PutMapping("/edit-user/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE', 'BODEGUERO')")
     public ResponseEntity<UserResponseDto> editUser(@PathVariable Long id, @Valid @RequestBody EditProfileDto editProfileDto){
         return ResponseEntity.ok(userService.editProfile(id, editProfileDto));
     }

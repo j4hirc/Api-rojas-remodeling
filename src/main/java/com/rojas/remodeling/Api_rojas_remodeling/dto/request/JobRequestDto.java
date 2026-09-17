@@ -14,13 +14,20 @@ public class JobRequestDto {
 
     @NotBlank(message = "El nombre del cliente no puede estar vacío")
     private String clientName;
-    @NotBlank(message = "El teléfono del cliente no puede estar vacío")
+
     private String clientPhone;
 
 
     private String description;
     @NotBlank(message = "La dirección no puede estar vacía")
     private String address;
+
+
+    //los nuevos campos para el número de edificio y apartamento
+    private String buildingNumber;
+    private String apartment;
+
+
     @NotNull(message = "La latitud es obligatoria para la ubicación")
     private Double latitude;
     @NotNull(message = "La longitud es obligatoria para la ubicación")

@@ -20,19 +20,19 @@ public class CategoriesController {
     private final CategoriesService categoriesService;
 
     @GetMapping("/all")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE', 'BODEGUERO')")
     public ResponseEntity<List<CategoriesResponseDto>> listAll(){
         return ResponseEntity.ok(categoriesService.getAllCategories());
     }
 
     @GetMapping("/id/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE', 'BODEGUERO')")
     public ResponseEntity<CategoriesResponseDto> findById(@PathVariable Long id) {
         return ResponseEntity.ok(categoriesService.findById(id));
     }
 
     @GetMapping("/name/{name}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE', 'BODEGUERO')")
     public ResponseEntity<CategoriesResponseDto> findByName(@PathVariable String name) {
         return ResponseEntity.ok(categoriesService.findByName(name));
     }
@@ -40,21 +40,21 @@ public class CategoriesController {
 
 
     @PostMapping("/create")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
     public ResponseEntity<CategoriesResponseDto> create(@Valid @RequestBody CategoriesRequestDto categoriesRequestDto) {
         CategoriesResponseDto categoriesResponseDto = categoriesService.createCategories(categoriesRequestDto);
         return new ResponseEntity<>(categoriesResponseDto, HttpStatus.CREATED);
     }
 
     @PutMapping("/update/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
     public ResponseEntity<CategoriesResponseDto> update(@Valid @RequestBody CategoriesRequestDto categoriesRequestDto, @PathVariable Long id) {
 
         return ResponseEntity.ok(categoriesService.updateCategories(id, categoriesRequestDto));
     }
 
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         categoriesService.deleteCategories(id);
         return ResponseEntity.ok("Eliminado correctamente");

@@ -50,7 +50,7 @@ public class DataLoader implements CommandLineRunner {
                 });
 
 
-        if(usersRepository.findByEmail("info@remomn.com").isEmpty()){
+        if(usersRepository.findByEmail("info@remomn.com").isEmpty()) {
             Users admin = new Users();
             admin.setDni("0000000001");
             admin.setFirstName("Administrador");

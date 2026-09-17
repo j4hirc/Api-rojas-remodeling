@@ -21,7 +21,7 @@ public class MaterialsController {
     private final MaterialsService materialsService;
 
     @PostMapping("/create")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
     public ResponseEntity<MaterialsResponseDto> create(@Valid @RequestBody MaterialsRequestDto materialsRequestDto) {
         MaterialsResponseDto materialsResponseDto = materialsService.createMaterials(materialsRequestDto);
         return new ResponseEntity<>(materialsResponseDto, HttpStatus.CREATED);
@@ -29,28 +29,28 @@ public class MaterialsController {
 
 
     @GetMapping("/all")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE', 'BODEGUERO')")
     public ResponseEntity<List<MaterialsResponseDto>> findAll() {
         return ResponseEntity.ok(materialsService.findAll());
     }
 
     // Obtener material por ID
     @GetMapping("/id/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE', 'BODEGUERO')")
     public ResponseEntity<MaterialsResponseDto> findById(@PathVariable Long id) {
         return ResponseEntity.ok(materialsService.findById(id));
     }
 
     // Actualizar un material
     @PutMapping("/update/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
     public ResponseEntity<MaterialsResponseDto> updateMaterials(@PathVariable Long id, @Valid @RequestBody MaterialsRequestDto materialsRequestDto) {
         return ResponseEntity.ok(materialsService.updateMaterials(id, materialsRequestDto));
     }
 
     // Eliminar un material
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
     public ResponseEntity<?> deleteMaterials(@PathVariable Long id) {
         materialsService.deleteMaterials(id);
         return ResponseEntity.ok("Eliminado correctamente");
@@ -61,7 +61,7 @@ public class MaterialsController {
 
     // Buscar materiales por ID de categoría
     @GetMapping("/category/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE', 'BODEGUERO')")
     public ResponseEntity<List<MaterialsResponseDto>> findByCategoriesId(@PathVariable Long id) {
         return ResponseEntity.ok(materialsService.findByCategoriesId(id));
     }

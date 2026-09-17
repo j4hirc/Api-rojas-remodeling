@@ -14,7 +14,7 @@ public class JobRequestDto {
 
     @NotBlank(message = "El nombre del cliente no puede estar vacío")
     private String clientName;
-    @NotBlank(message = "El teléfono del cliente no puede estar vacío")
+
     private String clientPhone;
 
 

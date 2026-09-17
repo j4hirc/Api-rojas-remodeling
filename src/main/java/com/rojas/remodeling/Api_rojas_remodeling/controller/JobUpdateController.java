@@ -23,7 +23,7 @@ public class JobUpdateController {
 
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'BODEGUERO')")
     public ResponseEntity<JobUpdateResponseDto> createJobUpdate(
             @Valid @RequestPart("data") JobUpdateRequestDto requestDto,
             @RequestPart(value = "files") List<MultipartFile> files) {
@@ -32,7 +32,7 @@ public class JobUpdateController {
     }
 
     @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'BODEGUERO')")
     public ResponseEntity<JobUpdateResponseDto> updateJobUpdate(@PathVariable Long id,
                                                                 @Valid @RequestPart("data") JobUpdateRequestDto requestDto,
                                                                 @RequestPart(value = "files") List<MultipartFile> files){

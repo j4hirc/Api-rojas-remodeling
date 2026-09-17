@@ -21,32 +21,32 @@ public class JobsController {
     private final JobService service;
 
     @GetMapping("/find-by-id-employee/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
     public ResponseEntity<List<JobResponseDto>> findByEmployeeId(@PathVariable Long id){
         return ResponseEntity.ok(service.findByEmployeeId(id));
     }
 
     @GetMapping("/find-id/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
     public ResponseEntity<JobResponseDto> findById(@PathVariable Long id){
         return ResponseEntity.ok(service.findById(id));
     }
 
     @GetMapping("/find-name-employee/{nameEmployee}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
     public ResponseEntity<List<JobResponseDto>> findByNameEmployee(@PathVariable String nameEmployee){
         return ResponseEntity.ok(service.findByNameEmployee(nameEmployee));
     }
 
     @GetMapping("/all")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE', 'BODEGUERO')")
     public ResponseEntity<List<JobResponseDto>> findAll(){
         return ResponseEntity.ok(service.findAll());
     }
 
     // 🔥 MODIFICADO PARA RECIBIR EL PLANO
     @PostMapping(value = "/create-job", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
     public ResponseEntity<JobResponseDto> createJob(
             @RequestPart("data") @Valid JobRequestDto jobRequestDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files){ // 🔥 AHORA ES UNA LISTA
@@ -56,7 +56,7 @@ public class JobsController {
 
     // 🔥 MODIFICADO PARA RECIBIR EL PLANO
     @PutMapping(value = "/update-job/{id}", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
     public ResponseEntity<JobResponseDto> updateJob(
             @PathVariable Long id,
             @RequestPart("data") @Valid JobRequestDto jobRequestDto,
@@ -65,7 +65,7 @@ public class JobsController {
     }
 
     @PatchMapping("/{id}/invoice")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
     public ResponseEntity<JobResponseDto> updateInvoice(
             @PathVariable Long id,
             @RequestBody java.util.Map<String, String> body) {
@@ -75,7 +75,7 @@ public class JobsController {
     }
 
     @DeleteMapping("/delete-job/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
     public ResponseEntity<String> deleteJob(@PathVariable Long id){
         service.deleteJob(id);
         return ResponseEntity.ok("Trabajo eliminado con exito");

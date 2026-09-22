@@ -95,11 +95,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGlobalException(Exception ex) {
+        // IMPORTANTE: ver la causa real en la consola
+        ex.printStackTrace();
+
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("timestamp", LocalDateTime.now());
         errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         errorResponse.put("error", "Internal Server Error");
-        errorResponse.put("message", "Ocurrió un error inesperado en el servidor.");
+        // Temporalmente devolvemos el mensaje real para depurar
+        errorResponse.put("message", ex.getClass().getSimpleName() + ": " + ex.getMessage());
+        if (ex.getCause() != null) {
+            errorResponse.put("cause", ex.getCause().getClass().getSimpleName() + ": " + ex.getCause().getMessage());
+        }
 
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }

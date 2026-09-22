@@ -15,6 +15,10 @@ public class JobUpdateResponseDto {
 
     private LocalDateTime date;
 
+    private Double price;
+
+    private String status;
+
     private List<EvidencesResponseDto> evidences;
 
 }

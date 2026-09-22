@@ -110,14 +110,25 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         Jobs job = jobsRepository.findById(requestDto.getJobId()).orElseThrow(() -> new ResourceNotFoundException("Trabajo no encontrado"));
         Users employee = usersRepository.findById(requestDto.getEmployeeId()).orElseThrow(() -> new ResourceNotFoundException("Empleado no encontrado"));
 
-        if (requestDto.getStatus() != null) {
-            job.setStatus(requestDto.getStatus());
-            jobsRepository.save(job);
+        if (requestDto.getNewPrice() != null && requestDto.getNewPrice() > 0) {
+            job.setPay(requestDto.getNewPrice());
         }
+
+        if (requestDto.getStatus() != null && !requestDto.getStatus().trim().isEmpty()) {
+            job.setStatus(requestDto.getStatus());
+        }
+        jobsRepository.save(job);
 
         existingUpdate.setJob(job);
         existingUpdate.setEmployee(employee);
         existingUpdate.setComment(requestDto.getComment());
+        // Precio y estado históricos de este avance (valores independientes)
+        if (requestDto.getNewPrice() != null) {
+            existingUpdate.setPrice(requestDto.getNewPrice());
+        }
+        if (requestDto.getStatus() != null && !requestDto.getStatus().trim().isEmpty()) {
+            existingUpdate.setStatus(requestDto.getStatus());
+        }
 
         if (files != null && !files.isEmpty()) {
             List<Evidences> oldEvidences = evidencesRepository.findByJobUpdate(existingUpdate);

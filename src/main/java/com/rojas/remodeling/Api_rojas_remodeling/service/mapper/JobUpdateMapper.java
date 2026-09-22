@@ -18,6 +18,8 @@ public class JobUpdateMapper {
         jobUpdateResponseDto.setJobUpdateId(entity.getId());
         jobUpdateResponseDto.setDate(entity.getDate());
         jobUpdateResponseDto.setComment(entity.getComment());
+        jobUpdateResponseDto.setPrice(entity.getPrice());
+        jobUpdateResponseDto.setStatus(entity.getStatus());
         jobUpdateResponseDto.setEvidences(evidencesResponse);
         return jobUpdateResponseDto;
     }
@@ -28,6 +30,17 @@ public class JobUpdateMapper {
         entity.setDate(LocalDateTime.now());
         entity.setEmployee(employee);
         entity.setJob(job);
+        if (jobUpdateRequestDto.getNewPrice() != null) {
+            entity.setPrice(jobUpdateRequestDto.getNewPrice());
+        } else {
+            // Si no envían newPrice, tomamos el pay actual del trabajo como snapshot
+            entity.setPrice(job.getPay());
+        }
+        if (jobUpdateRequestDto.getStatus() != null && !jobUpdateRequestDto.getStatus().trim().isEmpty()) {
+            entity.setStatus(jobUpdateRequestDto.getStatus());
+        } else {
+            entity.setStatus(job.getStatus());
+        }
         return entity;
     }
 

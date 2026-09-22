@@ -27,7 +27,7 @@ public class JobsController {
     }
 
     @GetMapping("/find-id/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'BODEGUERO','EMPLOYEE')")
     public ResponseEntity<JobResponseDto> findById(@PathVariable Long id){
         return ResponseEntity.ok(service.findById(id));
     }

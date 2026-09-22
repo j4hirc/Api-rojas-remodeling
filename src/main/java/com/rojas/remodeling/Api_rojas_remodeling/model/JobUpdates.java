@@ -24,6 +24,12 @@ public class JobUpdates {
     @Column(nullable = false)
     private LocalDateTime date;
 
+    @Column
+    private Double price;
+
+    @Column
+    private String status;
+
     @ManyToOne
     @JoinColumn(name = "job_id", nullable = false)
     private Jobs job;

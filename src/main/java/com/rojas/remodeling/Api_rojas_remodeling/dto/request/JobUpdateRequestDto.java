@@ -17,6 +17,8 @@ public class JobUpdateRequestDto {
     private Double newPrice;
     @NotBlank(message = "El estado del trabajo es requerido")
     private String status;
+    // Indica si el reporte modifica la orden original.
+    private Boolean hasModifications = false;
 
     private List<MaterialSelectionDto> materials;
 }

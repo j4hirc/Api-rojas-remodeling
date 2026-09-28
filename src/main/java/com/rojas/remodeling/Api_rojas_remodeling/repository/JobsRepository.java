@@ -1,11 +1,9 @@
 package com.rojas.remodeling.Api_rojas_remodeling.repository;
 
 import com.rojas.remodeling.Api_rojas_remodeling.model.Jobs;
+import jakarta.persistence.LockModeType;
 import lombok.NonNull;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -37,4 +35,7 @@ public interface JobsRepository extends JpaRepository<Jobs, Long> {
     @Query("DELETE FROM Jobs j WHERE j.id = :jobId")
     void deleteJobByIdCustom(@Param("jobId") Long jobId);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT j FROM Jobs j WHERE j.id = :id")
+    Optional<Jobs> findByIdForUpdate(@Param("id") Long id);
 }

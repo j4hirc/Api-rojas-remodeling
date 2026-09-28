@@ -53,5 +53,8 @@ public class JobRequestDto {
 
     private Integer priority;
 
+    // Solo se envía correo cuando la petición incluye true.
+    private Boolean sendNotification = false;
+
 
 }

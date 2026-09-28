@@ -15,6 +15,9 @@ import com.rojas.remodeling.Api_rojas_remodeling.service.mapper.JobMapper;
 import com.rojas.remodeling.Api_rojas_remodeling.service.mapper.JobUpdateMapper;
 import com.rojas.remodeling.Api_rojas_remodeling.service.mapper.MaterialsMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -99,7 +102,9 @@ public class JobServiceImpl implements JobService {
 
         List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
 
-        if (employee.getEmail() != null && !employee.getEmail().isBlank()) {
+        if (Boolean.TRUE.equals(dto.getSendNotification())
+                && employee.getEmail() != null
+                && !employee.getEmail().isBlank()) {
             try {
                 String subject = "Asignación de nuevo trabajo: " + savedJob.getClientName();
 
@@ -113,7 +118,11 @@ public class JobServiceImpl implements JobService {
                         + (savedJob.getApartment() != null ? " - Apto: " + savedJob.getApartment() : "") + "<br>"
                         + "• Fecha: " + savedJob.getJobDate() + "<br>"
                         + "• Estado: " + savedJob.getStatus() + "<br>"
-                        + "• Descripción: " + savedJob.getDescription().replace("\n", "<br>") + "</p>"
+                        + "• Descripción: "
+                        + (savedJob.getDescription() == null
+                        ? ""
+                        : savedJob.getDescription().replace("\n", "<br>"))
+                        + "</p>"
                         + "<p>💰 <b>Valor a Pagar: " + savedJob.getPay() + "</b></p>"
                         + "<p>Por favor, ingresa a la plataforma para revisar los detalles completos y confirmar tu disponibilidad:<br>"
                         + "👉 <a href='https://remomn.netlify.app/index.html'>Acceder a la plataforma</a></p>"
@@ -136,7 +145,12 @@ public class JobServiceImpl implements JobService {
     @Override
     @Transactional
     public JobResponseDto updateJob(Long id, JobRequestDto dto, List<MultipartFile> files) {
-        Jobs existingJob = findJobById(id);
+        Jobs existingJob = jobsRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Trabajo no encontrado con ID: " + id
+                ));
+
+        validateReviewTransition(existingJob, dto);
         Users employee = findUserById(dto.getEmployeeId(), "Empleado");
         Users manager = findUserById(dto.getManagerId(), "Manager");
 
@@ -158,7 +172,9 @@ public class JobServiceImpl implements JobService {
 
         syncJobMaterials(savedJob, dto.getMaterials());
 
-        if (employee.getEmail() != null && !employee.getEmail().isBlank()) {
+        if (Boolean.TRUE.equals(dto.getSendNotification())
+                && employee.getEmail() != null
+                && !employee.getEmail().isBlank()) {
             try {
                 String subject = "Actualización de trabajo: " + savedJob.getClientName();
                 String message = "Estimado/a " + employee.getFirstName() + ",\n\n"
@@ -344,6 +360,52 @@ public class JobServiceImpl implements JobService {
                 }).toList();
 
         return jobMapper.jobsToJobResponseDto(job, materialsResponse, updates, blueprintUrls);
+    }
+
+    private void validateReviewTransition(
+            Jobs existingJob,
+            JobRequestDto dto
+    ) {
+        String requestedStatus = dto.getStatus() == null
+                ? ""
+                : dto.getStatus().trim().toUpperCase(java.util.Locale.ROOT);
+
+        if (!java.util.Set.of(
+                "PENDING",
+                "IN_PROGRESS",
+                "REVIEW",
+                "COMPLETED",
+                "CANCELLED"
+        ).contains(requestedStatus)) {
+            throw new IllegalArgumentException("Estado del trabajo no válido.");
+        }
+
+        dto.setStatus(requestedStatus);
+
+        String currentStatus = existingJob.getStatus() == null
+                ? ""
+                : existingJob.getStatus().trim();
+
+        if (!"REVIEW".equalsIgnoreCase(currentStatus)
+                || "REVIEW".equals(requestedStatus)) {
+            return;
+        }
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isOffice = authentication != null
+                && authentication.isAuthenticated()
+                && authentication.getAuthorities().stream().anyMatch(authority ->
+                "ROLE_ADMIN".equals(authority.getAuthority())
+                        || "ROLE_JEFE".equals(authority.getAuthority())
+        );
+
+        if (!isOffice) {
+            throw new AccessDeniedException(
+                    "Solo Admin o Jefe pueden cambiar un trabajo que está en Revisión."
+            );
+        }
     }
 
     private Jobs findJobById(Long jobId) {

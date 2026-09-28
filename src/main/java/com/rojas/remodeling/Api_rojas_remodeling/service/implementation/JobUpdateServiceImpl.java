@@ -37,7 +37,7 @@ public class JobUpdateServiceImpl implements JobUpdateService {
     @Transactional
     public JobUpdateResponseDto createJobUpdate(JobUpdateRequestDto requestDto, List<MultipartFile> files) {
 
-        Jobs job = jobsRepository.findById(requestDto.getJobId())
+        Jobs job = jobsRepository.findByIdForUpdate(requestDto.getJobId())
                 .orElseThrow(() -> new RuntimeException("Trabajo no encontrado"));
         Users employee = usersRepository.findById(requestDto.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
@@ -46,9 +46,12 @@ public class JobUpdateServiceImpl implements JobUpdateService {
             job.setPay(requestDto.getNewPrice());
         }
 
-        if (requestDto.getStatus() != null && !requestDto.getStatus().trim().isEmpty()) {
-            job.setStatus(requestDto.getStatus());
-        }
+        String effectiveStatus = resolveReportStatus(job, requestDto);
+
+        // El trabajo y el avance deben registrar el mismo estado efectivo.
+        job.setStatus(effectiveStatus);
+        requestDto.setStatus(effectiveStatus);
+
         jobsRepository.save(job);
 
         JobUpdates jobUpdate = jobUpdateMapper.toEntity(requestDto, job, employee);
@@ -107,16 +110,19 @@ public class JobUpdateServiceImpl implements JobUpdateService {
     @Transactional
     public JobUpdateResponseDto updateJobUpdate(Long id, JobUpdateRequestDto requestDto, List<MultipartFile> files) {
         JobUpdates existingUpdate = jobUpdateRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Actualización no encontrada"));
-        Jobs job = jobsRepository.findById(requestDto.getJobId()).orElseThrow(() -> new ResourceNotFoundException("Trabajo no encontrado"));
+        Jobs job = jobsRepository.findByIdForUpdate(requestDto.getJobId()).orElseThrow(() -> new ResourceNotFoundException("Trabajo no encontrado"));
         Users employee = usersRepository.findById(requestDto.getEmployeeId()).orElseThrow(() -> new ResourceNotFoundException("Empleado no encontrado"));
 
         if (requestDto.getNewPrice() != null && requestDto.getNewPrice() > 0) {
             job.setPay(requestDto.getNewPrice());
         }
 
-        if (requestDto.getStatus() != null && !requestDto.getStatus().trim().isEmpty()) {
-            job.setStatus(requestDto.getStatus());
-        }
+        String effectiveStatus = resolveReportStatus(job, requestDto);
+
+// El trabajo y el avance deben registrar el mismo estado efectivo.
+        job.setStatus(effectiveStatus);
+        requestDto.setStatus(effectiveStatus);
+
         jobsRepository.save(job);
 
         existingUpdate.setJob(job);
@@ -147,6 +153,44 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         List<Evidences> allEvidences = evidencesRepository.findByJobUpdate(existingUpdate);
         if (allEvidences != null) { for (Evidences ev : allEvidences) { evidencesResponseList.add(evidencesMapper.toResponse(ev)); } }
         return jobUpdateMapper.toResponse(existingUpdate, evidencesResponseList);
+    }
+
+    private String resolveReportStatus(
+            Jobs job,
+            JobUpdateRequestDto requestDto
+    ) {
+        String currentStatus = job.getStatus() == null
+                ? ""
+                : job.getStatus().trim().toUpperCase(java.util.Locale.ROOT);
+
+        if ("COMPLETED".equals(currentStatus)
+                || "CANCELLED".equals(currentStatus)) {
+            throw new IllegalArgumentException(
+                    "No se pueden registrar o editar avances de un trabajo finalizado."
+            );
+        }
+
+        String requestedStatus = requestDto.getStatus() == null
+                ? ""
+                : requestDto.getStatus().trim().toUpperCase(java.util.Locale.ROOT);
+
+        if (!java.util.Set.of(
+                "IN_PROGRESS",
+                "COMPLETED",
+                "REVIEW"
+        ).contains(requestedStatus)) {
+            throw new IllegalArgumentException(
+                    "El estado del reporte debe ser IN_PROGRESS, COMPLETED o REVIEW."
+            );
+        }
+
+        // Un avance nunca puede quitar una revisión pendiente.
+        if ("REVIEW".equals(currentStatus)
+                || Boolean.TRUE.equals(requestDto.getHasModifications())) {
+            return "REVIEW";
+        }
+
+        return requestedStatus;
     }
 
     private void notifyManager(Jobs job, Users employee, String pdfUrl) {

@@ -16,6 +16,10 @@ public class JobUpdateMapper {
     public JobUpdateResponseDto toResponse(JobUpdates entity, List<EvidencesResponseDto> evidencesResponse){
         JobUpdateResponseDto jobUpdateResponseDto = new JobUpdateResponseDto();
         jobUpdateResponseDto.setJobUpdateId(entity.getId());
+        jobUpdateResponseDto.setMaterialSnapshotAvailable(Boolean.TRUE.equals(entity.getMaterialSnapshotAvailable()));
+        jobUpdateResponseDto.setHasModifications(entity.getHasModifications());
+        jobUpdateResponseDto.setInitialPay(entity.getInitialPay());
+        jobUpdateResponseDto.setReportedMaterials(List.copyOf(entity.getReportedMaterials()));
         jobUpdateResponseDto.setDate(entity.getDate());
         jobUpdateResponseDto.setComment(entity.getComment());
         jobUpdateResponseDto.setPrice(entity.getPrice());

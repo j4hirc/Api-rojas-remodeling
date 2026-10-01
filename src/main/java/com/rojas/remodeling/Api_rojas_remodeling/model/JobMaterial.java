@@ -23,6 +23,10 @@ public class JobMaterial {
     @Column(name = "quantity")
     private Double quantity;
 
+    // Price agreed when assigned, independent of subsequent catalogue changes.
+    @Column(name = "unit_price")
+    private Double unitPrice;
+
     @Column(name = "unit")
     private String unit;
 

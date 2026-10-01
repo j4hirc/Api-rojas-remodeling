@@ -10,6 +10,10 @@ import java.util.List;
 public class JobUpdateResponseDto {
 
     private Long jobUpdateId;
+    private Boolean materialSnapshotAvailable;
+    private Boolean hasModifications;
+    private Double initialPay;
+    private List<com.rojas.remodeling.Api_rojas_remodeling.model.MaterialSnapshot> reportedMaterials;
 
     private String comment;
 

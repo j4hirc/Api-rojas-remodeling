@@ -44,6 +44,7 @@ public class JobServiceImpl implements JobService {
 
     private final SupabaseStorageService supabaseStorageService;
     private final EmailService emailService;
+    private final MaterialBaselineService baselineService;
 
     @Override
     @Transactional(readOnly = true)
@@ -64,6 +65,7 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<JobResponseDto> findByNameEmployee(String nameEmployee) {
         List<Jobs> jobs = jobsRepository.findByEmployeeFirstName(nameEmployee);
         return buildJobResponses(jobs);
@@ -101,6 +103,7 @@ public class JobServiceImpl implements JobService {
         saveJobMaterials(savedJob, dto.getMaterials());
 
         List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
+        baselineService.captureOriginal(savedJob, finalMaterials);
 
         if (Boolean.TRUE.equals(dto.getSendNotification())
                 && employee.getEmail() != null
@@ -273,6 +276,7 @@ public class JobServiceImpl implements JobService {
                         Collectors.mapping(jm -> {
                             MaterialsResponseDto mDto = materialsMapper.toResponseDto(jm.getMaterial());
                             mDto.setQuantity(jm.getQuantity());
+                            mDto.setPrice(baselineService.price(jm));
                             mDto.setUnit(jm.getUnit());
                             return mDto;
                         }, Collectors.toList())));
@@ -309,6 +313,12 @@ public class JobServiceImpl implements JobService {
         jobMaterialRepository.deleteAll(existingJobMaterials);
         jobMaterialRepository.flush();
         saveJobMaterials(job, incomingMaterials);
+        Map<Long, Double> priorPrices = existingJobMaterials.stream().collect(Collectors.toMap(
+                row -> row.getMaterial().getId(), baselineService::price));
+        jobMaterialRepository.findByJobId(job.getId()).forEach(row -> {
+            Double previous = priorPrices.get(row.getMaterial().getId());
+            if (previous != null) row.setUnitPrice(previous);
+        });
     }
 
     // 🔥 CORRECCIÓN CRÍTICA: Prevenir el bloqueo si el DTO manda materiales repetidos por accidente
@@ -332,7 +342,13 @@ public class JobServiceImpl implements JobService {
             JobMaterial jm = new JobMaterial();
             jm.setJob(job);
             jm.setMaterial(material);
+            if (dto.getQuantity() == null || !Double.isFinite(dto.getQuantity()) || dto.getQuantity() < 0)
+                throw new IllegalArgumentException("Cantidad de material inválida");
             jm.setQuantity(dto.getQuantity());
+            Double assignedPrice = job.getOriginalMaterials().stream()
+                    .filter(row -> row.getMaterialId().equals(material.getId()))
+                    .map(MaterialSnapshot::getUnitPrice).findFirst().orElse(material.getPrice());
+            jm.setUnitPrice(assignedPrice);
             jm.setUnit(dto.getUnit());
             return jm;
         }).toList();
@@ -355,6 +371,7 @@ public class JobServiceImpl implements JobService {
                 .map(jm -> {
                     MaterialsResponseDto mDto = materialsMapper.toResponseDto(jm.getMaterial());
                     mDto.setQuantity(jm.getQuantity());
+                    mDto.setPrice(baselineService.price(jm));
                     mDto.setUnit(jm.getUnit());
                     return mDto;
                 }).toList();

@@ -45,6 +45,9 @@ public class JobMapper {
                                                List<String> blueprintUrls){
         JobResponseDto dto = new JobResponseDto();
         dto.setJobId(jobs.getId());
+        dto.setOriginalAssignmentAvailable(Boolean.TRUE.equals(jobs.getOriginalAssignmentAvailable()));
+        dto.setInitialPay(jobs.getInitialPay());
+        dto.setOriginalMaterials(List.copyOf(jobs.getOriginalMaterials()));
         dto.setClientName(jobs.getClientName());
         dto.setClientPhone(jobs.getClientPhone());
         dto.setDescription(jobs.getDescription());

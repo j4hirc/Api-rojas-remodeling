@@ -32,6 +32,7 @@ public class JobUpdateServiceImpl implements JobUpdateService {
     private final JobUpdateMapper jobUpdateMapper;
     private final EvidencesMapper evidencesMapper;
     private final EmailService emailService;
+    private final MaterialBaselineService baselineService;
 
     @Override
     @Transactional
@@ -42,9 +43,20 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         Users employee = usersRepository.findById(requestDto.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
 
-        if (requestDto.getNewPrice() != null && requestDto.getNewPrice() > 0) {
-            job.setPay(requestDto.getNewPrice());
+        List<JobMaterial> currentMaterials = jobMaterialRepository.findByJobId(job.getId());
+        List<MaterialSnapshot> reported = baselineService.reportMaterials(job, currentMaterials, requestDto.getMaterials());
+        List<MaterialSnapshot> comparison = Boolean.TRUE.equals(job.getOriginalAssignmentAvailable())
+                ? job.getOriginalMaterials() : currentMaterials.stream().map(baselineService::snapshot).toList();
+        boolean modifications = Boolean.TRUE.equals(requestDto.getHasModifications())
+                || baselineService.changed(comparison, reported);
+        requestDto.setHasModifications(modifications);
+        double calculatedPrice = baselineService.total(reported);
+        if (requestDto.getNewPrice() != null && (!Double.isFinite(requestDto.getNewPrice())
+                || Math.abs(requestDto.getNewPrice() - calculatedPrice) > 0.01)) {
+            throw new IllegalArgumentException("Los precios cambiaron. Recarga el trabajo y vuelve a generar el reporte.");
         }
+        requestDto.setNewPrice(calculatedPrice);
+        job.setPay(calculatedPrice); // Zero is valid when all reported quantities are zero.
 
         String effectiveStatus = resolveReportStatus(job, requestDto);
 
@@ -55,33 +67,28 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         jobsRepository.save(job);
 
         JobUpdates jobUpdate = jobUpdateMapper.toEntity(requestDto, job, employee);
+        jobUpdate.setReportedMaterials(new ArrayList<>(reported));
+        jobUpdate.setMaterialSnapshotAvailable(true);
+        jobUpdate.setHasModifications(modifications);
+        jobUpdate.setInitialPay(job.getInitialPay());
         JobUpdates savedUpdate = jobUpdateRepository.save(jobUpdate);
 
-        if (requestDto.getMaterials() != null && !requestDto.getMaterials().isEmpty()) {
-            List<JobMaterial> existingMaterials = jobMaterialRepository.findByJobId(job.getId());
-
-            for (MaterialSelectionDto dtoMat : requestDto.getMaterials()) {
-                Materials material = materialsRepository.findById(dtoMat.getMaterialId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Material no encontrado"));
-
-                Optional<JobMaterial> existingJm = existingMaterials.stream()
-                        .filter(jm -> jm.getMaterial().getId().equals(material.getId()))
-                        .findFirst();
-
-                if (existingJm.isPresent()) {
-                    JobMaterial jmToUpdate = existingJm.get();
-                    jmToUpdate.setQuantity(dtoMat.getQuantity());
-                    jmToUpdate.setUnit(dtoMat.getUnit() != null ? dtoMat.getUnit() : "N/A");
-                    jobMaterialRepository.save(jmToUpdate);
-                } else {
-                    JobMaterial newJm = new JobMaterial();
-                    newJm.setJob(job);
-                    newJm.setMaterial(material);
-                    newJm.setQuantity(dtoMat.getQuantity());
-                    newJm.setUnit(dtoMat.getUnit() != null ? dtoMat.getUnit() : "N/A");
-                    jobMaterialRepository.save(newJm);
-                }
-            }
+        // Synchronize the complete reported assignment, including removals.
+        java.util.Set<Long> reportedIds = reported.stream().map(MaterialSnapshot::getMaterialId)
+                .collect(java.util.stream.Collectors.toSet());
+        jobMaterialRepository.deleteAll(currentMaterials.stream()
+                .filter(row -> !reportedIds.contains(row.getMaterial().getId())).toList());
+        for (MaterialSnapshot row : reported) {
+            JobMaterial assignment = currentMaterials.stream()
+                    .filter(existing -> existing.getMaterial().getId().equals(row.getMaterialId()))
+                    .findFirst().orElseGet(JobMaterial::new);
+            assignment.setJob(job);
+            if (assignment.getMaterial() == null) assignment.setMaterial(materialsRepository.findById(row.getMaterialId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Material no encontrado")));
+            assignment.setQuantity(row.getQuantity());
+            assignment.setUnit(row.getUnit());
+            assignment.setUnitPrice(row.getUnitPrice());
+            jobMaterialRepository.save(assignment);
         }
 
         List<EvidencesResponseDto> evidencesResponseList = new ArrayList<>();
@@ -110,6 +117,12 @@ public class JobUpdateServiceImpl implements JobUpdateService {
     @Transactional
     public JobUpdateResponseDto updateJobUpdate(Long id, JobUpdateRequestDto requestDto, List<MultipartFile> files) {
         JobUpdates existingUpdate = jobUpdateRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Actualización no encontrada"));
+        if (Boolean.TRUE.equals(existingUpdate.getMaterialSnapshotAvailable())) {
+            throw new IllegalArgumentException("Este reporte conserva un historial firmado. Registra un nuevo avance para corregirlo.");
+        }
+        if (!existingUpdate.getJob().getId().equals(requestDto.getJobId())) {
+            throw new IllegalArgumentException("El reporte no pertenece a ese trabajo.");
+        }
         Jobs job = jobsRepository.findByIdForUpdate(requestDto.getJobId()).orElseThrow(() -> new ResourceNotFoundException("Trabajo no encontrado"));
         Users employee = usersRepository.findById(requestDto.getEmployeeId()).orElseThrow(() -> new ResourceNotFoundException("Empleado no encontrado"));
 

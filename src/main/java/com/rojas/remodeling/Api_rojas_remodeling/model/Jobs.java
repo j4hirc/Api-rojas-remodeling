@@ -17,6 +17,17 @@ public class Jobs {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // NULL means that this legacy job has no trustworthy original assignment.
+    private Boolean originalAssignmentAvailable;
+    private Double initialPay;
+
+    @ElementCollection
+    @CollectionTable(name = "job_original_materials", joinColumns = @JoinColumn(name = "job_id"))
+    @OrderColumn(name = "line_order")
+    @org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
+    @org.hibernate.annotations.BatchSize(size = 100)
+    private List<MaterialSnapshot> originalMaterials = new java.util.ArrayList<>();
+
     @Column(nullable = false)
     private String clientName;
 

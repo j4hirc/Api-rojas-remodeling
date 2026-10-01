@@ -18,6 +18,17 @@ public class JobUpdates {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Boolean materialSnapshotAvailable;
+    private Boolean hasModifications;
+    private Double initialPay;
+
+    @ElementCollection
+    @CollectionTable(name = "job_update_materials", joinColumns = @JoinColumn(name = "job_update_id"))
+    @OrderColumn(name = "line_order")
+    @org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
+    @org.hibernate.annotations.BatchSize(size = 100)
+    private java.util.List<MaterialSnapshot> reportedMaterials = new java.util.ArrayList<>();
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String comment;
 

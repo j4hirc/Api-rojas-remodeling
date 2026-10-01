@@ -24,6 +24,7 @@ public class UserMapper {
         users.setStatus(userRequestDto.getStatus());
         users.setTitle(userRequestDto.getTitle());
         users.setColor(userRequestDto.getColor());
+        users.setHierarchyLevel(userRequestDto.getHierarchyLevel());
 
         return users;
     }
@@ -47,6 +48,7 @@ public class UserMapper {
         userResponseDto.setPhone(users.getPhone());
         userResponseDto.setColor(users.getColor());
         userResponseDto.setRoles(users.getRoles());
+        userResponseDto.setHierarchyLevel(users.getHierarchyLevel());
         return userResponseDto;
     }
 
@@ -77,6 +79,7 @@ public class UserMapper {
         entity.setStatus(dto.getStatus());
         entity.setTitle(dto.getTitle());
         entity.setColor(dto.getColor());
+        entity.setHierarchyLevel(dto.getHierarchyLevel());
     }
 
 

@@ -22,6 +22,7 @@ public class UserResponseDto {
     private LocalDate dateOfEntry;
     private String status;
     private String color;
+    private Integer hierarchyLevel;
     // --------------------------------------------------------------
 
     private Set<Roles> roles;

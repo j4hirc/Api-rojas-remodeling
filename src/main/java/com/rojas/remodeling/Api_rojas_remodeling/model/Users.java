@@ -57,6 +57,9 @@ public class Users {
     @Column(nullable = false, unique = true)
     private String color;
 
+    @Column(name = "hierarchy_level", nullable = false, unique = true)
+    private Integer hierarchyLevel;
+
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

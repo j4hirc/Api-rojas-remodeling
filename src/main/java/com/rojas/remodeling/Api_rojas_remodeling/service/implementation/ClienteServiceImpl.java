@@ -63,17 +63,20 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     @Transactional
-    public ClienteResponseDto updateCliente(Long id, ClienteRequestDto clienteRequestDto) {
-        Clientes clientes = clientesRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Cliente not found with ID: " + id));
+    public ClienteResponseDto updateCliente(
+            Long id,
+            ClienteRequestDto clienteRequestDto
+    ) {
+        Clientes cliente = clientesRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Cliente not found with ID: " + id
+                        )
+                );
 
-        clientes.setClientName(clienteRequestDto.getClientName());
-        clientes.setClientPhone(clienteRequestDto.getClientPhone());
-        clientes.setAddress(clienteRequestDto.getAddress());
-        clientes.setLatitude(clienteRequestDto.getLatitude());
-        clientes.setLongitude(clienteRequestDto.getLongitude());
+        clientesMapper.updateEntity(clienteRequestDto, cliente);
 
-        Clientes updatedCliente = clientesRepository.save(clientes);
+        Clientes updatedCliente = clientesRepository.save(cliente);
         return clientesMapper.toDto(updatedCliente);
     }
 

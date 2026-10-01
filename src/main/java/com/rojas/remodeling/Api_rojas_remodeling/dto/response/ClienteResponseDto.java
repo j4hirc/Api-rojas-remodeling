@@ -9,9 +9,15 @@ public class ClienteResponseDto {
 
     private String clientName;
 
+    private String companyName;
+
+    private String contactName;
+
     private String clientPhone;
 
     private String address;
+
+    private String codeBox;
 
     private Double latitude;
 

@@ -48,4 +48,6 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
     Boolean existsByDni(String dni);
     Boolean existsByPhone(String phone);
     Boolean existsByColor(String color);
+    boolean existsByHierarchyLevel(Integer hierarchyLevel);
+    boolean existsByHierarchyLevelAndIdNot(Integer hierarchyLevel, Long id);
 }

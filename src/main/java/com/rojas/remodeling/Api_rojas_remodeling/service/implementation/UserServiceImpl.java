@@ -71,6 +71,13 @@ public class UserServiceImpl implements UserService {
 
         validateUniqueFieldsForUpdate(existingUser, userRequestDto.getDni(), userRequestDto.getEmail(), userRequestDto.getPhone(), userRequestDto.getColor());
 
+        if (usersRepository.existsByHierarchyLevelAndIdNot(
+                userRequestDto.getHierarchyLevel(), id
+        )) {
+            throw new IllegalArgumentException(
+                    "La jerarquía ingresada ya está asignada a otro usuario."
+            );
+        }
         userMapper.updateEntityFromRequest(userRequestDto, existingUser);
 
         if(userRequestDto.getPassword() != null && !userRequestDto.getPassword().isEmpty()){
@@ -98,6 +105,11 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
         validateUniqueFields(userRequestDto.getDni(), userRequestDto.getEmail(), userRequestDto.getPhone(), userRequestDto.getColor());
+        if (usersRepository.existsByHierarchyLevel(userRequestDto.getHierarchyLevel())) {
+            throw new IllegalArgumentException(
+                    "La jerarquía ingresada ya está asignada a otro usuario."
+            );
+        }
 
         Users user = userMapper.userRequestToEntity(userRequestDto);
         user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));

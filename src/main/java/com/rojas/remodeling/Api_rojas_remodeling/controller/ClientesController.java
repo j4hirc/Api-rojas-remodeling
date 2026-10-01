@@ -46,8 +46,13 @@ public class ClientesController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'JEFE', 'EMPLOYEE', 'BODEGUERO')")
-    public ResponseEntity<ClienteResponseDto> updateCliente(@PathVariable Long id, @RequestBody ClienteRequestDto clienteRequestDto) {
-        return ResponseEntity.ok(clientesService.updateCliente(id, clienteRequestDto));
+    public ResponseEntity<ClienteResponseDto> updateCliente(
+            @PathVariable Long id,
+            @Valid @RequestBody ClienteRequestDto clienteRequestDto
+    ) {
+        return ResponseEntity.ok(
+                clientesService.updateCliente(id, clienteRequestDto)
+        );
     }
 
     @DeleteMapping("/delete/{id}")

@@ -7,6 +7,7 @@ import lombok.Data;
 @Table(name = "clientes")
 @Data
 public class Clientes {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -14,16 +15,24 @@ public class Clientes {
     @Column(name = "nombre", nullable = false)
     private String clientName;
 
+    @Column(name = "company_name")
+    private String companyName;
+
+    @Column(name = "contact_name")
+    private String contactName;
+
     @Column(name = "telefono")
     private String clientPhone;
 
     @Column(name = "address", nullable = false)
     private String address;
 
+    @Column(name = "code_box")
+    private String codeBox;
+
     @Column(nullable = false)
     private Double latitude;
 
     @Column(nullable = false)
     private Double longitude;
-
 }

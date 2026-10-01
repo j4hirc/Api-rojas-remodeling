@@ -50,4 +50,7 @@ public class UserRequestDto {
 
     @NotBlank(message = "El color no puede estar vacío")
     private String color;
+
+    @NotNull(message = "La jerarquía es obligatoria")
+    private Integer hierarchyLevel;
 }

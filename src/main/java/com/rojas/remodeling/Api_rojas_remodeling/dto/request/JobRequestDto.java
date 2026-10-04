@@ -3,7 +3,7 @@ package com.rojas.remodeling.Api_rojas_remodeling.dto.request;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
 import java.time.LocalDate; // <-- IMPORTANTE
@@ -38,7 +38,7 @@ public class JobRequestDto {
 
     @NotBlank(message = "El estado no puede estar vacío")
     private String status;
-    @Positive(message = "El pago debe ser un valor positivo")
+    @PositiveOrZero(message = "El pago debe ser un valor positivo")
     private Double pay;
     @NotNull(message = "La fecha del trabajo es obligatoria")
     private LocalDate jobDate;

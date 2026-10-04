@@ -126,8 +126,16 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         Jobs job = jobsRepository.findByIdForUpdate(requestDto.getJobId()).orElseThrow(() -> new ResourceNotFoundException("Trabajo no encontrado"));
         Users employee = usersRepository.findById(requestDto.getEmployeeId()).orElseThrow(() -> new ResourceNotFoundException("Empleado no encontrado"));
 
-        if (requestDto.getNewPrice() != null && requestDto.getNewPrice() > 0) {
-            job.setPay(requestDto.getNewPrice());
+        if (requestDto.getNewPrice() != null) {
+            double newPrice = requestDto.getNewPrice();
+
+            if (!Double.isFinite(newPrice) || newPrice < 0) {
+                throw new IllegalArgumentException(
+                        "El precio debe ser un número válido mayor o igual a cero."
+                );
+            }
+
+            job.setPay(newPrice);
         }
 
         String effectiveStatus = resolveReportStatus(job, requestDto);

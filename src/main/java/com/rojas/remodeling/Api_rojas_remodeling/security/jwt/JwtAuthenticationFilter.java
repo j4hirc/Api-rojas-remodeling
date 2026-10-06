@@ -38,6 +38,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
+            if (!userDetails.isEnabled()) {
+                SecurityContextHolder.clearContext();
+
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setCharacterEncoding("UTF-8");
+                response.setContentType("application/json");
+
+                response.getWriter().write(
+                        "{\"status\":401,"
+                                + "\"code\":\"USER_INACTIVE\","
+                                + "\"message\":\"Tu usuario está inactivo. Contacta con administración.\"}"
+                );
+
+                return;
+            }
+
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities()
             );

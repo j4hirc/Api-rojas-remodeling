@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.AuthenticationException;
+
 import jakarta.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -110,6 +113,34 @@ public class GlobalExceptionHandler {
                 HttpStatus.FORBIDDEN
         );
     }
+
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<Map<String, Object>> handleDisabledUser(
+            DisabledException ex
+    ) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", 401);
+        body.put("code", "USER_INACTIVE");
+        body.put(
+                "message",
+                "Tu usuario está inactivo. Contacta con administración."
+        );
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthentication(
+            AuthenticationException ex
+    ) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", 401);
+        body.put("code", "AUTHENTICATION_FAILED");
+        body.put("message", "Correo o contraseña incorrectos, o acceso no autorizado.");
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGlobalException(Exception ex) {

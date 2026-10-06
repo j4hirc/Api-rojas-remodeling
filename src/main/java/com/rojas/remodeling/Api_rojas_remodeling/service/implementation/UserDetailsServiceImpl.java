@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +27,17 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                         new UsernameNotFoundException("Usuario no encontrado con el Email: " + email ) );
 
 
+        boolean enabled = user.getStatus() != null
+                && "Active".equalsIgnoreCase(user.getStatus().trim());
+
         return new org.springframework.security.core.userdetails.User(
-                user.getEmail(), user.getPassword(), mapRolesToAuthorities(user.getRoles())
+                user.getEmail(),
+                user.getPassword(),
+                enabled,
+                true,
+                true,
+                true,
+                mapRolesToAuthorities(user.getRoles())
         );
     }
 

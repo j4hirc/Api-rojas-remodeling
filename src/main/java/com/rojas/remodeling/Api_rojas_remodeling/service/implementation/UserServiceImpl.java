@@ -71,9 +71,10 @@ public class UserServiceImpl implements UserService {
 
         validateUniqueFieldsForUpdate(existingUser, userRequestDto.getDni(), userRequestDto.getEmail(), userRequestDto.getPhone(), userRequestDto.getColor());
 
-        if (usersRepository.existsByHierarchyLevelAndIdNot(
-                userRequestDto.getHierarchyLevel(), id
-        )) {
+        Integer hierarchyLevel = userRequestDto.getHierarchyLevel();
+
+        if (hierarchyLevel != null
+                && usersRepository.existsByHierarchyLevelAndIdNot(hierarchyLevel, id)) {
             throw new IllegalArgumentException(
                     "La jerarquía ingresada ya está asignada a otro usuario."
             );
@@ -105,7 +106,10 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
         validateUniqueFields(userRequestDto.getDni(), userRequestDto.getEmail(), userRequestDto.getPhone(), userRequestDto.getColor());
-        if (usersRepository.existsByHierarchyLevel(userRequestDto.getHierarchyLevel())) {
+        Integer hierarchyLevel = userRequestDto.getHierarchyLevel();
+
+        if (hierarchyLevel != null
+                && usersRepository.existsByHierarchyLevel(hierarchyLevel)) {
             throw new IllegalArgumentException(
                     "La jerarquía ingresada ya está asignada a otro usuario."
             );

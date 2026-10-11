@@ -87,7 +87,12 @@ public class Jobs {
     @Column(name = "blueprint_url")
     private String blueprintUrl;
 
-    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "job",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @org.hibernate.annotations.BatchSize(size = 100)
     private List<JobBlueprint> blueprints;
 
 }

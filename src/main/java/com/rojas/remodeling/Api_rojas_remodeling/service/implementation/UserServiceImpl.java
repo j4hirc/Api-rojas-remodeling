@@ -66,6 +66,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponseDto updateUser(Long id, UserRequestDto userRequestDto) {
+        // AÑADIDO: Validación de jerarquía para subcontratistas
+        validateEmployeeHierarchy(userRequestDto);
+
         Users existingUser = usersRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("The user does not exist"));
 
@@ -105,6 +108,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
+        // AÑADIDO: Validación de jerarquía para subcontratistas
+        validateEmployeeHierarchy(userRequestDto);
+
         validateUniqueFields(userRequestDto.getDni(), userRequestDto.getEmail(), userRequestDto.getPhone(), userRequestDto.getColor());
         Integer hierarchyLevel = userRequestDto.getHierarchyLevel();
 
@@ -241,6 +247,22 @@ public class UserServiceImpl implements UserService {
                 "Saludos,\nSistema Rojas Remodeling.";
 
         emailService.sendEmail(user.getEmail(), subject, body);
+    }
+
+    private void validateEmployeeHierarchy(UserRequestDto dto) {
+        if (
+                dto.getRoles() != null
+                        && dto.getRoles().contains("ROLE_EMPLOYEE")
+                        && (
+                        dto.getHierarchyLevel() == null
+                                || dto.getHierarchyLevel() < 1
+                )
+        ) {
+            throw new IllegalArgumentException(
+                    "Los subcontratistas deben tener "
+                            + "una jerarquía mayor o igual a 1."
+            );
+        }
     }
 
 }

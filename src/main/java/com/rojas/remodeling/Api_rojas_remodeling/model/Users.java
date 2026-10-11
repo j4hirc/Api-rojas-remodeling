@@ -54,6 +54,9 @@ public class Users {
     @Column(nullable = false)
     private String title;
 
+    @Column(name = "company_name", length = 255)
+    private String companyName;
+
     @Column(nullable = false, unique = true)
     private String color;
 

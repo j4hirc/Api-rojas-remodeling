@@ -43,6 +43,9 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         Users employee = usersRepository.findById(requestDto.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
 
+        // Validación aplicada correctamente aquí
+        validateAssignmentReporter(job, employee);
+
         List<JobMaterial> currentMaterials = jobMaterialRepository.findByJobId(job.getId());
         List<MaterialSnapshot> reported = baselineService.reportMaterials(job, currentMaterials, requestDto.getMaterials());
         List<MaterialSnapshot> comparison = Boolean.TRUE.equals(job.getOriginalAssignmentAvailable())
@@ -126,6 +129,9 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         Jobs job = jobsRepository.findByIdForUpdate(requestDto.getJobId()).orElseThrow(() -> new ResourceNotFoundException("Trabajo no encontrado"));
         Users employee = usersRepository.findById(requestDto.getEmployeeId()).orElseThrow(() -> new ResourceNotFoundException("Empleado no encontrado"));
 
+        // ---> AÑADIDO: Validación de asignación en updateJobUpdate <---
+        validateAssignmentReporter(job, employee);
+
         if (requestDto.getNewPrice() != null) {
             double newPrice = requestDto.getNewPrice();
 
@@ -140,7 +146,7 @@ public class JobUpdateServiceImpl implements JobUpdateService {
 
         String effectiveStatus = resolveReportStatus(job, requestDto);
 
-// El trabajo y el avance deben registrar el mismo estado efectivo.
+        // El trabajo y el avance deben registrar el mismo estado efectivo.
         job.setStatus(effectiveStatus);
         requestDto.setStatus(effectiveStatus);
 
@@ -227,6 +233,53 @@ public class JobUpdateServiceImpl implements JobUpdateService {
             }
         } catch (Exception e) {
             System.err.println("Advertencia: No se pudo enviar el correo.");
+        }
+    }
+
+    private void validateAssignmentReporter(
+            Jobs job,
+            Users employee
+    ) {
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        boolean office = auth != null
+                && auth.getAuthorities().stream().anyMatch(
+                authority -> java.util.Set.of(
+                        "ROLE_ADMIN",
+                        "ROLE_JEFE"
+                ).contains(authority.getAuthority())
+        );
+
+        if (
+                !java.util.Objects.equals(
+                        job.getEmployee().getId(),
+                        employee.getId()
+                )
+                        || (
+                        !office
+                                && (
+                                auth == null
+                                        || !employee.getEmail()
+                                        .equalsIgnoreCase(auth.getName())
+                        )
+                )
+        ) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "El trabajo ya no está asignado a este subcontratista."
+            );
+        }
+
+        if (
+                job.getAssignmentId() != null
+                        && !"ACCEPTED".equals(job.getAssignmentStatus())
+                        && !office
+        ) {
+            throw new IllegalArgumentException(
+                    "Primero debes aceptar la asignación del trabajo."
+            );
         }
     }
 }

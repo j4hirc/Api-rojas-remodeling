@@ -17,6 +17,12 @@ public class Jobs {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long assignmentId;
+
+    private String assignmentStatus;
+
+    private java.time.Instant assignmentExpiresAt;
+
     // NULL means that this legacy job has no trustworthy original assignment.
     private Boolean originalAssignmentAvailable;
     private Double initialPay;

@@ -9,6 +9,13 @@ import java.util.List;
 public class JobResponseDto {
 
     private Long jobId;
+
+    private Long assignmentId;
+
+    private String assignmentStatus;
+
+    private java.time.Instant assignmentExpiresAt;
+
     private Boolean originalAssignmentAvailable;
     private Double initialPay;
     private List<com.rojas.remodeling.Api_rojas_remodeling.model.MaterialSnapshot> originalMaterials;

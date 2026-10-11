@@ -23,6 +23,7 @@ public class UserMapper {
         users.setDateOfEntry(userRequestDto.getDateOfEntry());
         users.setStatus(userRequestDto.getStatus());
         users.setTitle(userRequestDto.getTitle());
+        users.setCompanyName(normalizeCompany(userRequestDto.getCompanyName()));
         users.setColor(userRequestDto.getColor());
         users.setHierarchyLevel(userRequestDto.getHierarchyLevel());
 
@@ -41,6 +42,7 @@ public class UserMapper {
         userResponseDto.setLastName(users.getLastName());
         userResponseDto.setSecondSurname(users.getSecondSurname());
         userResponseDto.setTitle(users.getTitle());
+        userResponseDto.setCompanyName(users.getCompanyName());
         userResponseDto.setDateOfBirth(users.getDateOfBirth());
         userResponseDto.setDateOfEntry(users.getDateOfEntry());
         userResponseDto.setStatus(users.getStatus());
@@ -78,9 +80,18 @@ public class UserMapper {
         entity.setDateOfEntry(dto.getDateOfEntry());
         entity.setStatus(dto.getStatus());
         entity.setTitle(dto.getTitle());
+        entity.setCompanyName(normalizeCompany(dto.getCompanyName()));
         entity.setColor(dto.getColor());
         entity.setHierarchyLevel(dto.getHierarchyLevel());
     }
 
+
+    private String normalizeCompany(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return value.trim();
+    }
 
 }

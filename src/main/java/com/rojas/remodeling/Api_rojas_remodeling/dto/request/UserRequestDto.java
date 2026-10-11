@@ -46,6 +46,9 @@ public class UserRequestDto {
     @NotBlank(message = "El titulo no puede estar vacío")
     private String title;
 
+    @jakarta.validation.constraints.Size(max = 255,message = "La compañía no puede superar los 255 caracteres")
+    private String companyName;
+
     @NotNull(message = "Debe tener al menos un rol")
     private Set<String> roles;
 

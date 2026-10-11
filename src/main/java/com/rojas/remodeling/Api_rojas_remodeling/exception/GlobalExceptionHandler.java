@@ -141,6 +141,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
     }
 
+    @ExceptionHandler(
+            org.springframework.web.server.ResponseStatusException.class
+    )
+    public ResponseEntity<Map<String, Object>> handleResponseStatus(
+            org.springframework.web.server.ResponseStatusException ex
+    ) {
+        Map<String, Object> body = new HashMap<>();
+
+        body.put("status", ex.getStatusCode().value());
+        body.put(
+                "message",
+                ex.getReason() == null
+                        ? "Solicitud inválida"
+                        : ex.getReason()
+        );
+
+        return ResponseEntity.status(ex.getStatusCode()).body(body);
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGlobalException(Exception ex) {
@@ -171,6 +189,5 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
-
 
 }

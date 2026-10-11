@@ -21,6 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.rojas.remodeling.Api_rojas_remodeling.assignment.AssignmentService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +46,8 @@ public class JobServiceImpl implements JobService {
     private final SupabaseStorageService supabaseStorageService;
     private final EmailService emailService;
     private final MaterialBaselineService baselineService;
+
+    private final AssignmentService assignmentService;
 
     @Override
     @Transactional(readOnly = true)
@@ -105,7 +108,13 @@ public class JobServiceImpl implements JobService {
         List<JobMaterial> finalMaterials = jobMaterialRepository.findByJobId(savedJob.getId());
         baselineService.captureOriginal(savedJob, finalMaterials);
 
-        if (Boolean.TRUE.equals(dto.getSendNotification())
+        boolean assignmentNotified = assignmentService.onSaved(
+                savedJob,
+                null
+        );
+
+        if (!assignmentNotified
+                && Boolean.TRUE.equals(dto.getSendNotification())
                 && employee.getEmail() != null
                 && !employee.getEmail().isBlank()) {
             try {
@@ -152,10 +161,35 @@ public class JobServiceImpl implements JobService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Trabajo no encontrado con ID: " + id
                 ));
+        if (
+                existingJob.getAssignmentId() != null
+                        && !java.util.Objects.equals(
+                        existingJob.getAssignmentId(),
+                        dto.getExpectedAssignmentId()
+                )
+        ) {
+            throw new IllegalArgumentException(
+                    "La asignación cambió mientras editabas. "
+                            + "Cierra y vuelve a abrir el trabajo antes de guardar."
+            );
+        }
 
         validateReviewTransition(existingJob, dto);
         Users employee = findUserById(dto.getEmployeeId(), "Empleado");
         Users manager = findUserById(dto.getManagerId(), "Manager");
+
+        Long previousEmployeeId = existingJob.getEmployee().getId();
+
+        if (
+                "PENDING".equals(existingJob.getAssignmentStatus())
+                        && !"PENDING".equalsIgnoreCase(dto.getStatus())
+                        && !"CANCELLED".equalsIgnoreCase(dto.getStatus())
+        ) {
+            throw new IllegalArgumentException(
+                    "El subcontratista debe aceptar la asignación "
+                            + "antes de iniciar o completar el trabajo."
+            );
+        }
 
         jobMapper.updateEntityFromDto(dto, existingJob, employee, manager);
         Jobs savedJob = jobsRepository.save(existingJob);
@@ -174,8 +208,13 @@ public class JobServiceImpl implements JobService {
         }
 
         syncJobMaterials(savedJob, dto.getMaterials());
+        boolean assignmentNotified = assignmentService.onSaved(
+                savedJob,
+                previousEmployeeId
+        );
 
-        if (Boolean.TRUE.equals(dto.getSendNotification())
+        if (!assignmentNotified
+                && Boolean.TRUE.equals(dto.getSendNotification())
                 && employee.getEmail() != null
                 && !employee.getEmail().isBlank()) {
             try {
@@ -234,7 +273,12 @@ public class JobServiceImpl implements JobService {
     @Override
     @Transactional
     public void deleteJob(Long id) {
-        Jobs job = findJobById(id);
+        Jobs job = jobsRepository.findByIdForUpdate(id)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException(
+                                "Trabajo no encontrado"
+                        )
+                );
 
         // 1. ELIMINAR PLANOS FÍSICOS DE SUPABASE
         List<JobBlueprint> blueprints = jobBlueprintRepository.findByJobId(job.getId());

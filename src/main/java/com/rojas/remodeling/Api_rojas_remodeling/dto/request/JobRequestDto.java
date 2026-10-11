@@ -17,6 +17,7 @@ public class JobRequestDto {
 
     private String clientPhone;
 
+    private Long expectedAssignmentId;
 
     private String description;
     @NotBlank(message = "La dirección no puede estar vacía")

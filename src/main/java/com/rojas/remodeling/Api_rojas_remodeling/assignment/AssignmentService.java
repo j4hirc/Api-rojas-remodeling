@@ -55,7 +55,6 @@ public class AssignmentService {
         }
 
         // Antes de iniciar, comprobar que existe un admin de respaldo.
-        fallbackAdmin();
 
         cancelPending(job, "Reasignación manual por administración");
 

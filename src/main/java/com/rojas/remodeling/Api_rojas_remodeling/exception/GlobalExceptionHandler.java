@@ -22,6 +22,9 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final org.slf4j.Logger log =
+            org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleResourceNotFound(ResourceNotFoundException ex){
         Map<String, Object> errorResponse = new HashMap<>();
@@ -160,6 +163,51 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(ex.getStatusCode()).body(body);
     }
 
+    @ExceptionHandler(
+            org.springframework.web.multipart.support
+                    .MissingServletRequestPartException.class
+    )
+    public ResponseEntity<Map<String, Object>> handleMissingPart(
+            org.springframework.web.multipart.support
+                    .MissingServletRequestPartException ex,
+            jakarta.servlet.http.HttpServletRequest request
+    ) {
+        // Solo metadatos: nunca fotos, firmas, cuerpos ni credenciales.
+        String parts;
+
+        try {
+            parts = request.getParts().stream()
+                    .map(part -> part.getName() + ":" + part.getSize())
+                    .collect(java.util.stream.Collectors.joining(","));
+        } catch (Exception ignored) {
+            parts = "unavailable";
+        }
+
+        log.warn(
+                "Multipart missing part={} method={} path={} "
+                        + "contentType={} bytes={} receivedParts={}",
+                ex.getRequestPartName(),
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getContentType(),
+                request.getContentLengthLong(),
+                parts
+        );
+
+        Map<String, Object> body = new HashMap<>();
+
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("code", "MISSING_REPORT_PART");
+        body.put("part", ex.getRequestPartName());
+        body.put(
+                "message",
+                "Falta una parte obligatoria del formulario: "
+                        + ex.getRequestPartName()
+        );
+
+        return ResponseEntity.badRequest().body(body);
+    }
+    
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGlobalException(Exception ex) {
         // IMPORTANTE: ver la causa real en la consola

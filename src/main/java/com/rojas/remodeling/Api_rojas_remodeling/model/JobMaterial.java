@@ -20,6 +20,9 @@ public class JobMaterial {
     @JoinColumn(name = "job_id", nullable = false)
     private Jobs job;
 
+    @Column(name = "line_order")
+    private Integer lineOrder;
+
     @Column(name = "quantity")
     private Double quantity;
 

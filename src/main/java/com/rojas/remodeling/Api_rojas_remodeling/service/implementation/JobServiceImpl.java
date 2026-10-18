@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import com.rojas.remodeling.Api_rojas_remodeling.assignment.AssignmentService;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.List;
@@ -370,7 +370,7 @@ public class JobServiceImpl implements JobService {
         if (materialDtos == null || materialDtos.isEmpty()) return;
 
         // Agrupamos los materiales repetidos para evitar que la base de datos tire error
-        Map<Long, MaterialSelectionDto> materialesUnicos = new HashMap<>();
+        Map<Long, MaterialSelectionDto> materialesUnicos = new LinkedHashMap<>();
         for (MaterialSelectionDto dto : materialDtos) {
             if (materialesUnicos.containsKey(dto.getMaterialId())) {
                 MaterialSelectionDto exist = materialesUnicos.get(dto.getMaterialId());
@@ -396,6 +396,10 @@ public class JobServiceImpl implements JobService {
             jm.setUnit(dto.getUnit());
             return jm;
         }).toList();
+        
+        for (int i = 0; i < jobMaterials.size(); i++) {
+            jobMaterials.get(i).setLineOrder(i);
+        }
 
         jobMaterialRepository.saveAll(jobMaterials);
     }

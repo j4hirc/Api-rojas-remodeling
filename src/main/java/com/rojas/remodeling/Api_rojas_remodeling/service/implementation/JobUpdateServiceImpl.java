@@ -81,16 +81,32 @@ public class JobUpdateServiceImpl implements JobUpdateService {
                 .collect(java.util.stream.Collectors.toSet());
         jobMaterialRepository.deleteAll(currentMaterials.stream()
                 .filter(row -> !reportedIds.contains(row.getMaterial().getId())).toList());
+        int lineOrder = 0;
+
         for (MaterialSnapshot row : reported) {
             JobMaterial assignment = currentMaterials.stream()
-                    .filter(existing -> existing.getMaterial().getId().equals(row.getMaterialId()))
-                    .findFirst().orElseGet(JobMaterial::new);
+                    .filter(existing ->
+                            existing.getMaterial().getId().equals(row.getMaterialId()))
+                    .findFirst()
+                    .orElseGet(JobMaterial::new);
+
             assignment.setJob(job);
-            if (assignment.getMaterial() == null) assignment.setMaterial(materialsRepository.findById(row.getMaterialId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Material no encontrado")));
+
+            if (assignment.getMaterial() == null) {
+                assignment.setMaterial(
+                        materialsRepository.findById(row.getMaterialId())
+                                .orElseThrow(() ->
+                                        new ResourceNotFoundException("Material no encontrado"))
+                );
+            }
+
+            // Conservar también el orden al registrar un reporte.
+            assignment.setLineOrder(lineOrder++);
+
             assignment.setQuantity(row.getQuantity());
             assignment.setUnit(row.getUnit());
             assignment.setUnitPrice(row.getUnitPrice());
+
             jobMaterialRepository.save(assignment);
         }
 

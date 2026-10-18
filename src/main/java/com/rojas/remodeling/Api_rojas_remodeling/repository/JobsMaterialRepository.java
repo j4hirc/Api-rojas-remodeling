@@ -18,10 +18,25 @@ public interface JobsMaterialRepository extends JpaRepository<JobMaterial, Long>
     void deleteByJobId(@Param("jobId") Long jobId);
 
     @EntityGraph(attributePaths = {"job", "material"})
-    @Query("SELECT j FROM JobMaterial j WHERE j.job.id = :jobId")
-    List<JobMaterial> findByJobId(Long jobId);
+    @Query("""
+            SELECT j FROM JobMaterial j
+            WHERE j.job.id = :jobId
+            ORDER BY
+                CASE WHEN j.lineOrder IS NULL THEN 1 ELSE 0 END,
+                j.lineOrder,
+                j.id
+            """)
+    List<JobMaterial> findByJobId(@Param("jobId") Long jobId);
 
-    @Query("SELECT jm FROM JobMaterial jm WHERE jm.job.id IN :jobIds")
     @EntityGraph(attributePaths = {"material"})
+    @Query("""
+            SELECT jm FROM JobMaterial jm
+            WHERE jm.job.id IN :jobIds
+            ORDER BY
+                jm.job.id,
+                CASE WHEN jm.lineOrder IS NULL THEN 1 ELSE 0 END,
+                jm.lineOrder,
+                jm.id
+            """)
     List<JobMaterial> findAllByJobIds(@Param("jobIds") List<Long> jobIds);
 }

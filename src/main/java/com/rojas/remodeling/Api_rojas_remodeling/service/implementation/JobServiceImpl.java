@@ -46,6 +46,7 @@ public class JobServiceImpl implements JobService {
     private final SupabaseStorageService supabaseStorageService;
     private final EmailService emailService;
     private final MaterialBaselineService baselineService;
+    private final JobCompletionService completionService;
 
     private final AssignmentService assignmentService;
 
@@ -87,6 +88,7 @@ public class JobServiceImpl implements JobService {
         Users employee = findUserById(dto.getEmployeeId(), "Empleado");
         Users manager = findUserById(dto.getManagerId(), "Manager");
         Jobs job = jobMapper.JobRequestDtoToJobs(dto, employee, manager);
+        completionService.apply(job, null, dto.getCompletedDate());
 
         Jobs savedJob = jobsRepository.save(job);
 
@@ -191,7 +193,9 @@ public class JobServiceImpl implements JobService {
             );
         }
 
+        String previousStatus = existingJob.getStatus();
         jobMapper.updateEntityFromDto(dto, existingJob, employee, manager);
+        completionService.apply(existingJob, previousStatus, dto.getCompletedDate());
         Jobs savedJob = jobsRepository.save(existingJob);
 
         if (files != null && !files.isEmpty()) {
@@ -396,7 +400,7 @@ public class JobServiceImpl implements JobService {
             jm.setUnit(dto.getUnit());
             return jm;
         }).toList();
-        
+
         for (int i = 0; i < jobMaterials.size(); i++) {
             jobMaterials.get(i).setLineOrder(i);
         }

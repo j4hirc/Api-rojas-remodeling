@@ -74,6 +74,10 @@ public class Jobs {
     @Column(nullable = false, name = "job_date")
     private LocalDate jobDate;
 
+    // Fecha civil de cierre; los registros históricos sin fecha conservan NULL.
+    @Column(name = "completed_date")
+    private LocalDate completedDate;
+
     private Integer priority;
 
     @ManyToOne

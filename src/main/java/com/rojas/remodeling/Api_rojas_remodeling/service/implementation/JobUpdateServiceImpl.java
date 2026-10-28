@@ -33,6 +33,7 @@ public class JobUpdateServiceImpl implements JobUpdateService {
     private final EvidencesMapper evidencesMapper;
     private final EmailService emailService;
     private final MaterialBaselineService baselineService;
+    private final JobCompletionService completionService;
 
     @Override
     @Transactional
@@ -64,7 +65,9 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         String effectiveStatus = resolveReportStatus(job, requestDto);
 
         // El trabajo y el avance deben registrar el mismo estado efectivo.
+        String previousStatus = job.getStatus();
         job.setStatus(effectiveStatus);
+        completionService.apply(job, previousStatus, null);
         requestDto.setStatus(effectiveStatus);
 
         jobsRepository.save(job);
@@ -163,7 +166,9 @@ public class JobUpdateServiceImpl implements JobUpdateService {
         String effectiveStatus = resolveReportStatus(job, requestDto);
 
         // El trabajo y el avance deben registrar el mismo estado efectivo.
+        String previousStatus = job.getStatus();
         job.setStatus(effectiveStatus);
+        completionService.apply(job, previousStatus, null);
         requestDto.setStatus(effectiveStatus);
 
         jobsRepository.save(job);

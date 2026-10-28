@@ -66,6 +66,7 @@ public class JobMapper {
         dto.setStatus(jobs.getStatus());
         dto.setPay(jobs.getPay());
         dto.setJobDate(jobs.getJobDate());
+        dto.setCompletedDate(jobs.getCompletedDate());
         dto.setPriority(jobs.getPriority());
 
         dto.setBlueprintUrls(blueprintUrls);

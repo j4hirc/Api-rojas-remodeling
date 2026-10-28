@@ -45,6 +45,9 @@ public class JobResponseDto {
 
     private LocalDate jobDate;
 
+    // Opcional para corregir la fecha real de un trabajo ya completado.
+    private LocalDate completedDate;
+
     private Long employeeId;
 
     private Long managerId;

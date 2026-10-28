@@ -43,6 +43,9 @@ public class JobRequestDto {
     private Double pay;
     @NotNull(message = "La fecha del trabajo es obligatoria")
     private LocalDate jobDate;
+
+    // Opcional para corregir la fecha real de un trabajo ya completado.
+    private LocalDate completedDate;
     @NotNull(message = "El ID del empleado es obligatorio")
     private Long employeeId;
     @NotNull(message = "El ID del manager es obligatorio")

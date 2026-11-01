@@ -356,17 +356,18 @@ public class JobServiceImpl implements JobService {
         }).toList();
     }
 
-    private void syncJobMaterials(Jobs job, List<MaterialSelectionDto> incomingMaterials) {
-        List<JobMaterial> existingJobMaterials = jobMaterialRepository.findByJobId(job.getId());
+    private void syncJobMaterials(
+            Jobs job,
+            List<MaterialSelectionDto> incomingMaterials
+    ) {
+        List<JobMaterial> existingJobMaterials =
+                jobMaterialRepository.findByJobId(job.getId());
+
         jobMaterialRepository.deleteAll(existingJobMaterials);
         jobMaterialRepository.flush();
+
+        // Guardar las cantidades recibidas con los precios actuales del catálogo.
         saveJobMaterials(job, incomingMaterials);
-        Map<Long, Double> priorPrices = existingJobMaterials.stream().collect(Collectors.toMap(
-                row -> row.getMaterial().getId(), baselineService::price));
-        jobMaterialRepository.findByJobId(job.getId()).forEach(row -> {
-            Double previous = priorPrices.get(row.getMaterial().getId());
-            if (previous != null) row.setUnitPrice(previous);
-        });
     }
 
     // 🔥 CORRECCIÓN CRÍTICA: Prevenir el bloqueo si el DTO manda materiales repetidos por accidente
@@ -393,9 +394,12 @@ public class JobServiceImpl implements JobService {
             if (dto.getQuantity() == null || !Double.isFinite(dto.getQuantity()) || dto.getQuantity() < 0)
                 throw new IllegalArgumentException("Cantidad de material inválida");
             jm.setQuantity(dto.getQuantity());
-            Double assignedPrice = job.getOriginalMaterials().stream()
-                    .filter(row -> row.getMaterialId().equals(material.getId()))
-                    .map(MaterialSnapshot::getUnitPrice).findFirst().orElse(material.getPrice());
+            double assignedPrice = material.getPrice();
+
+            if (!Double.isFinite(assignedPrice) || assignedPrice < 0) {
+                throw new IllegalArgumentException("Precio de material inválido");
+            }
+
             jm.setUnitPrice(assignedPrice);
             jm.setUnit(dto.getUnit());
             return jm;

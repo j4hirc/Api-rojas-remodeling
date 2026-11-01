@@ -29,8 +29,13 @@ public class MaterialBaselineService {
     }
 
     public double price(JobMaterial row) {
-        double value = row.getUnitPrice() != null ? row.getUnitPrice() : row.getMaterial().getPrice();
-        if (!Double.isFinite(value) || value < 0) throw new IllegalArgumentException("Precio de material inválido");
+
+        double value = row.getMaterial().getPrice();
+
+        if (!Double.isFinite(value) || value < 0) {
+            throw new IllegalArgumentException("Precio de material inválido");
+        }
+
         return value;
     }
 
@@ -51,7 +56,7 @@ public class MaterialBaselineService {
             MaterialSnapshot original = originals.get(input.getMaterialId());
             Materials material = existing != null ? existing.getMaterial() : materialsRepository.findById(input.getMaterialId())
                     .orElseThrow(() -> new IllegalArgumentException("Material no encontrado"));
-            double unitPrice = original != null ? original.getUnitPrice() : existing != null ? price(existing) : material.getPrice();
+            double unitPrice = material.getPrice();
             if (!Double.isFinite(unitPrice) || unitPrice < 0) throw new IllegalArgumentException("Precio de material inválido");
             String name = original != null ? original.getName() : material.getName();
             String unit = input.getUnit() != null ? input.getUnit() : existing != null ? existing.getUnit() : material.getUnit();
